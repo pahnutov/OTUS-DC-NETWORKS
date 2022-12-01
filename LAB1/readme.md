@@ -7,4 +7,4 @@
 
 ## Ñץולא סועט
 
-![scheme.png]
+![scheme.png](scheme.png)
