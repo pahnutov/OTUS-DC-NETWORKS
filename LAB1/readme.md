@@ -20,10 +20,10 @@ Dn|номера сервисов внутри ÷ќƒа|0-15|
 Sn|номер spine|1-255|
 X|значение по пор€дку|1-255
 
-где Dn:
-0 Ц loopback1
-1 Ц loopback2
-2 Ц p2p links
+где Dn: <br>
+0 Ц loopback1 <br>
+1 Ц loopback2 <br>
+2 Ц p2p links 
 
 ### –аспределение адресов
 
