@@ -45,5 +45,5 @@ DC1-L3|10.2.1.4/31|10.2.2.4/31
 
 ## Ñץולא סועט
 
-![scheme.png](scheme.png)
+![scheme1.png](scheme1.png)
 
