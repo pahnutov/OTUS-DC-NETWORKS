@@ -18,7 +18,6 @@
 hostname DC1-S1
 feature ospf
 
-no password strength-check
 username admin password 5 $5$EpjWybJm$5mpj3jo3pEmSllAwFICLfBi/7uvJmNQ0eheQXqc75kD  role network-admin
 no ip domain-lookup
 ip domain-name demo.lab
@@ -89,7 +88,6 @@ router ospf UNDERLAY
 hostname DC1-S2
 feature ospf
 
-no password strength-check
 username admin password 5 $5$KTDEXqgq$L8xkct2JY9ERGiltil5uKPeCrvcHgLBTOJkxfhnk6XA  role network-admin
 no ip domain-lookup
 ip domain-name demo.lab
@@ -157,7 +155,55 @@ router ospf UNDERLAY
 <summary>Конфигурация коммутатора <b>DC1-L1</b>: </summary>
 
 ```
+hostname DC1-L1
+feature ospf
 
+username admin password 5 $5$EpjWybJm$5mpj3jo3pEmSllAwFICLfBi/7uvJmNQ0eheQXqc75kD  role network-admin
+no ip domain-lookup
+ip domain-name demo.lab
+
+key chain OSPF
+  key 0
+    key-string 7 075e731f1a5c4f
+
+interface Ethernet1/6
+  description to DC1-S1
+  no switchport
+  no ip redirects
+  ip address 10.2.1.1/31
+  ip ospf authentication message-digest
+  ip ospf authentication key-chain OSPF
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/7
+  description to DC1-S2
+  no switchport
+  no ip redirects
+  ip address 10.2.2.1/31
+  ip ospf authentication message-digest
+  ip ospf authentication key-chain OSPF
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+  no shutdown
+
+interface loopback0
+  description RID
+  ip address 10.0.0.3/32
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+
+interface loopback1
+  description VTEP
+  ip address 10.1.0.3/32
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+line console
+line vty
+boot nxos bootflash:/nxos.9.2.2.bin
+router ospf UNDERLAY
+  router-id 10.0.0.3
 
 ```
 </details>
