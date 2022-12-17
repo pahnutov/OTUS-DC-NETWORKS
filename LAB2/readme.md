@@ -324,3 +324,74 @@ router ospf UNDERLAY
 </details>
 
 ### Проверка маршрутизации
+
+Проверка OSPF на коммутаторе DC1-L1:
+```
+DC1-L1# sh ip ospf database
+        OSPF Router with ID (10.0.0.3) (Process ID UNDERLAY VRF default)
+
+                Router Link States (Area 0.0.0.0)
+
+Link ID         ADV Router      Age        Seq#       Checksum Link Count
+10.0.0.1        10.0.0.1        774        0x8000002b 0xfb21   8
+10.0.0.2        10.0.0.2        395        0x80000025 0x9f79   8
+10.0.0.3        10.0.0.3        394        0x80000027 0x615a   6
+10.0.0.4        10.0.0.4        392        0x80000025 0x278a   6
+10.0.0.5        10.0.0.5        396        0x80000025 0xe8bc   6
+
+DC1-L1# sh ip ro
+IP Route Table for VRF "default"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+10.0.0.1/32, ubest/mbest: 1/0
+    *via 10.2.1.0, Eth1/6, [110/41], 15:01:43, ospf-UNDERLAY, intra
+10.0.0.2/32, ubest/mbest: 1/0
+    *via 10.2.2.0, Eth1/7, [110/41], 14:47:05, ospf-UNDERLAY, intra
+10.0.0.3/32, ubest/mbest: 2/0, attached
+    *via 10.0.0.3, Lo0, [0/0], 15:24:43, local
+    *via 10.0.0.3, Lo0, [0/0], 15:24:43, direct
+10.0.0.4/32, ubest/mbest: 2/0
+    *via 10.2.1.0, Eth1/6, [110/81], 14:47:05, ospf-UNDERLAY, intra
+    *via 10.2.2.0, Eth1/7, [110/81], 14:47:05, ospf-UNDERLAY, intra
+10.0.0.5/32, ubest/mbest: 2/0
+    *via 10.2.1.0, Eth1/6, [110/81], 14:47:05, ospf-UNDERLAY, intra
+    *via 10.2.2.0, Eth1/7, [110/81], 14:47:05, ospf-UNDERLAY, intra
+10.1.0.1/32, ubest/mbest: 1/0
+    *via 10.2.1.0, Eth1/6, [110/41], 15:01:43, ospf-UNDERLAY, intra
+10.1.0.2/32, ubest/mbest: 1/0
+    *via 10.2.2.0, Eth1/7, [110/41], 14:47:05, ospf-UNDERLAY, intra
+10.1.0.3/32, ubest/mbest: 2/0, attached
+    *via 10.1.0.3, Lo1, [0/0], 15:23:43, local
+    *via 10.1.0.3, Lo1, [0/0], 15:23:43, direct
+10.1.0.4/32, ubest/mbest: 2/0
+    *via 10.2.1.0, Eth1/6, [110/81], 14:47:05, ospf-UNDERLAY, intra
+    *via 10.2.2.0, Eth1/7, [110/81], 14:47:05, ospf-UNDERLAY, intra
+10.1.0.5/32, ubest/mbest: 2/0
+    *via 10.2.1.0, Eth1/6, [110/81], 14:47:05, ospf-UNDERLAY, intra
+    *via 10.2.2.0, Eth1/7, [110/81], 14:47:05, ospf-UNDERLAY, intra
+10.2.1.0/31, ubest/mbest: 1/0, attached
+    *via 10.2.1.1, Eth1/6, [0/0], 15:22:32, direct
+10.2.1.1/32, ubest/mbest: 1/0, attached
+    *via 10.2.1.1, Eth1/6, [0/0], 15:22:32, local
+10.2.1.2/31, ubest/mbest: 1/0
+    *via 10.2.1.0, Eth1/6, [110/80], 15:01:37, ospf-UNDERLAY, intra
+10.2.1.4/31, ubest/mbest: 1/0
+    *via 10.2.1.0, Eth1/6, [110/80], 15:00:21, ospf-UNDERLAY, intra
+10.2.2.0/31, ubest/mbest: 1/0, attached
+    *via 10.2.2.1, Eth1/7, [0/0], 15:22:08, direct
+10.2.2.1/32, ubest/mbest: 1/0, attached
+    *via 10.2.2.1, Eth1/7, [0/0], 15:22:08, local
+10.2.2.2/31, ubest/mbest: 1/0
+    *via 10.2.2.0, Eth1/7, [110/80], 14:47:05, ospf-UNDERLAY, intra
+10.2.2.4/31, ubest/mbest: 1/0
+    *via 10.2.2.0, Eth1/7, [110/80], 14:47:05, ospf-UNDERLAY, intra
+
+DC1-L1#
+
+
+
+```
+
