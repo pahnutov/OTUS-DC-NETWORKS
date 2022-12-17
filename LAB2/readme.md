@@ -325,7 +325,7 @@ router ospf UNDERLAY
 
 ### Проверка маршрутизации
 
-Проверка OSPF на коммутаторе DC1-L1:
+Проверка OSPF на коммутаторе <b>DC1-L1</b>:
 ```
 DC1-L1# sh ip ospf database
         OSPF Router with ID (10.0.0.3) (Process ID UNDERLAY VRF default)
@@ -390,7 +390,7 @@ IP Route Table for VRF "default"
     *via 10.2.2.0, Eth1/7, [110/80], 14:47:05, ospf-UNDERLAY, intra
 
 ```
-Проверка OSPF на коммутаторе DC1-L2:
+Проверка OSPF на коммутаторе<b> DC1-L2</b>:
 ```
 DC1-L2# sh ip ospf database
         OSPF Router with ID (10.0.0.4) (Process ID UNDERLAY VRF default)
@@ -455,7 +455,7 @@ IP Route Table for VRF "default"
     *via 10.2.2.2, Eth1/7, [110/80], 15:26:24, ospf-UNDERLAY, intra
 ```
 
-Проверка OSPF на коммутаторе DC1-L3:
+Проверка OSPF на коммутаторе <b>DC1-L3</b>:
 ```
 DC1-L3# sh ip ospf database
         OSPF Router with ID (10.0.0.5) (Process ID UNDERLAY VRF default)
