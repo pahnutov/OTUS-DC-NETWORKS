@@ -3,7 +3,8 @@
 
 Цель:
 - Настроить первичные данные на коммутаторах;
-- Сконфигурировать динамическую маршрутизацию на базе протокола OSPF.
+- Сконфигурировать динамическую маршрутизацию на базе протокола OSPF;
+- Проверить динамическую маршрутизацию и доступность VTEP ID.
 
 ## Схема сети
 
@@ -389,6 +390,42 @@ IP Route Table for VRF "default"
 10.2.2.4/31, ubest/mbest: 1/0
     *via 10.2.2.0, Eth1/7, [110/80], 14:47:05, ospf-UNDERLAY, intra
 
+DC1-L1# ping 10.1.0.2 count 2
+PING 10.1.0.2 (10.1.0.2): 56 data bytes
+64 bytes from 10.1.0.2: icmp_seq=0 ttl=254 time=5.279 ms
+64 bytes from 10.1.0.2: icmp_seq=1 ttl=254 time=3.66 ms
+
+--- 10.1.0.2 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 3.66/4.469/5.279 ms
+DC1-L1#
+DC1-L1# ping 10.1.0.3 count 2
+PING 10.1.0.3 (10.1.0.3): 56 data bytes
+64 bytes from 10.1.0.3: icmp_seq=0 ttl=255 time=1.057 ms
+64 bytes from 10.1.0.3: icmp_seq=1 ttl=255 time=0.47 ms
+
+--- 10.1.0.3 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 0.47/0.763/1.057 ms
+
+DC1-L1# ping 10.1.0.4 count 2
+PING 10.1.0.4 (10.1.0.4): 56 data bytes
+64 bytes from 10.1.0.4: icmp_seq=0 ttl=253 time=7.289 ms
+64 bytes from 10.1.0.4: icmp_seq=1 ttl=253 time=4.363 ms
+
+--- 10.1.0.4 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 4.363/5.825/7.289 ms
+
+DC1-L1# ping 10.1.0.5 count 2
+PING 10.1.0.5 (10.1.0.5): 56 data bytes
+64 bytes from 10.1.0.5: icmp_seq=0 ttl=253 time=38.175 ms
+64 bytes from 10.1.0.5: icmp_seq=1 ttl=253 time=6.105 ms
+
+--- 10.1.0.5 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 6.105/22.139/38.175 ms
+
 ```
 Проверка OSPF на коммутаторе<b> DC1-L2</b>:
 ```
@@ -453,6 +490,43 @@ IP Route Table for VRF "default"
     *via 10.2.2.3, Eth1/7, [0/0], 15:44:44, local
 10.2.2.4/31, ubest/mbest: 1/0
     *via 10.2.2.2, Eth1/7, [110/80], 15:26:24, ospf-UNDERLAY, intra
+
+DC1-L2#  ping 10.1.0.1 count 2
+PING 10.1.0.1 (10.1.0.1): 56 data bytes
+64 bytes from 10.1.0.1: icmp_seq=0 ttl=254 time=8.579 ms
+64 bytes from 10.1.0.1: icmp_seq=1 ttl=254 time=5.221 ms
+--- 10.1.0.1 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 5.221/6.9/8.579 ms
+
+DC1-L2#  ping 10.1.0.2 count 2
+PING 10.1.0.2 (10.1.0.2): 56 data bytes
+64 bytes from 10.1.0.2: icmp_seq=0 ttl=254 time=7.512 ms
+64 bytes from 10.1.0.2: icmp_seq=1 ttl=254 time=4.099 ms
+
+--- 10.1.0.2 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 4.099/5.805/7.512 ms
+
+DC1-L2#  ping 10.1.0.3 count 2
+PING 10.1.0.3 (10.1.0.3): 56 data bytes
+64 bytes from 10.1.0.3: icmp_seq=0 ttl=253 time=43.147 ms
+64 bytes from 10.1.0.3: icmp_seq=1 ttl=253 time=6.439 ms
+
+--- 10.1.0.3 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 6.439/24.792/43.147 ms
+
+DC1-L2#  ping 10.1.0.5 count 2
+PING 10.1.0.5 (10.1.0.5): 56 data bytes
+64 bytes from 10.1.0.5: icmp_seq=0 ttl=253 time=9.988 ms
+64 bytes from 10.1.0.5: icmp_seq=1 ttl=253 time=7.94 ms
+
+--- 10.1.0.5 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 7.94/8.964/9.988 ms
+DC1-L2#
+
 ```
 
 Проверка OSPF на коммутаторе <b>DC1-L3</b>:
@@ -518,4 +592,42 @@ IP Route Table for VRF "default"
     *via 10.2.2.5, Eth1/7, [0/0], 15:33:34, direct
 10.2.2.5/32, ubest/mbest: 1/0, attached
     *via 10.2.2.5, Eth1/7, [0/0], 15:33:34, local
+
+DC1-L3# ping 10.1.0.1 count 2
+PING 10.1.0.1 (10.1.0.1): 56 data bytes
+64 bytes from 10.1.0.1: icmp_seq=0 ttl=254 time=6.249 ms
+64 bytes from 10.1.0.1: icmp_seq=1 ttl=254 time=3.641 ms
+
+--- 10.1.0.1 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 3.641/4.944/6.249 ms
+DC1-L3#
+DC1-L3# ping 10.1.0.2 count 2
+PING 10.1.0.2 (10.1.0.2): 56 data bytes
+64 bytes from 10.1.0.2: icmp_seq=0 ttl=254 time=8.848 ms
+64 bytes from 10.1.0.2: icmp_seq=1 ttl=254 time=4.336 ms
+
+--- 10.1.0.2 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 4.336/6.592/8.848 ms
+DC1-L3#
+DC1-L3# ping 10.1.0.3 count 2
+PING 10.1.0.3 (10.1.0.3): 56 data bytes
+64 bytes from 10.1.0.3: icmp_seq=0 ttl=253 time=9.996 ms
+64 bytes from 10.1.0.3: icmp_seq=1 ttl=253 time=8.512 ms
+
+--- 10.1.0.3 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 8.512/9.253/9.996 ms
+DC1-L3#
+DC1-L3# ping 10.1.0.4 count 2
+PING 10.1.0.4 (10.1.0.4): 56 data bytes
+64 bytes from 10.1.0.4: icmp_seq=0 ttl=253 time=7.473 ms
+64 bytes from 10.1.0.4: icmp_seq=1 ttl=253 time=4.875 ms
+
+--- 10.1.0.4 ping statistics ---
+2 packets transmitted, 2 packets received, 0.00% packet loss
+round-trip min/avg/max = 4.875/6.173/7.473 ms
+DC1-L3#
+
 ```
