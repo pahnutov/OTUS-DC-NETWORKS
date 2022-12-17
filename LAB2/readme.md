@@ -212,6 +212,55 @@ router ospf UNDERLAY
 <summary>Конфигурация коммутатора <b>DC1-L2</b>: </summary>
 
 ```
+hostname DC1-L2
+feature ospf
+
+username admin password 5 $5$2sk7wEvR$rBRwtTzbHQovBu6NUu5A39ui39SNm.D3airZ3mmIyd/  role network-admin
+no ip domain-lookup
+ip domain-name demo.lab
+
+key chain OSPF
+  key 0
+    key-string 7 075e731f1a5c4f
+
+interface Ethernet1/6
+  description to DC1-S1
+  no switchport
+  no ip redirects
+  ip address 10.2.1.3/31
+  ip ospf authentication message-digest
+  ip ospf authentication key-chain OSPF
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/7
+  description to DC1-S2
+  no switchport
+  no ip redirects
+  ip address 10.2.2.3/31
+  ip ospf authentication message-digest
+  ip ospf authentication key-chain OSPF
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+  no shutdown
+
+interface loopback0
+  description RID
+  ip address 10.0.0.4/32
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+
+interface loopback1
+  description VTEP
+  ip address 10.1.0.4/32
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+line console
+line vty
+boot nxos bootflash:/nxos.9.2.2.bin
+router ospf UNDERLAY
+  router-id 10.0.0.4
 ```
 </details>
 
@@ -219,5 +268,55 @@ router ospf UNDERLAY
 <summary>Конфигурация коммутатора <b>DC1-L3</b>: </summary>
 
 ```
+hostname DC1-L3
+feature ospf
+
+username admin password 5 $5$tYFbeAcZ$N0t9DOhncMf9ALXrH1TNEC1FhxN6AROcKqpROCJVVa1  role network-admin
+no ip domain-lookup
+ip domain-name demo.lab
+
+key chain OSPF
+  key 0
+    key-string 7 075e731f1a5c4f
+
+interface Ethernet1/6
+  description to DC1-S1
+  no switchport
+  no ip redirects
+  ip address 10.2.1.5/31
+  ip ospf authentication message-digest
+  ip ospf authentication key-chain OSPF
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+  no shutdown
+
+interface Ethernet1/7
+  description to DC1-S2
+  no switchport
+  no ip redirects
+  ip address 10.2.2.5/31
+  ip ospf authentication message-digest
+  ip ospf authentication key-chain OSPF
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+  no shutdown
+
+interface loopback0
+  description RID
+  ip address 10.0.0.5/32
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+
+interface loopback1
+  description VTEP
+  ip address 10.1.0.5/32
+  ip ospf network point-to-point
+  ip router ospf UNDERLAY area 0.0.0.0
+line console
+line vty
+boot nxos bootflash:/nxos.9.2.2.bin
+router ospf UNDERLAY
+  router-id 10.0.0.5
+
 ```
 </details>
