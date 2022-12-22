@@ -298,250 +298,212 @@ router bgp 65003
 
 Проверка BGP на коммутаторе <b>DC1-L1</b>:
 ```
-DC1-L1# sh isis adj
-IS-IS process: UNDERLAY VRF: default
-IS-IS adjacency database:
-Legend: '!': No AF level connectivity in given topology
-System ID       SNPA            Level  State  Hold Time  Interface
-DC1-S1          5000.0001.0007  2      UP     00:00:28   Ethernet1/6
-DC1-S2          5000.0002.0007  2      UP     00:00:21   Ethernet1/7
+DC1-L1# sh ip bgp summ
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.0.0.3, local AS number 65001
+BGP table version is 11, IPv4 Unicast config peers 2, capable peers 2
+3 network entries and 5 paths using 908 bytes of memory
+BGP attribute entries [3/492], BGP AS path entries [2/20]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
 
-DC1-L1# sh ip ro isis
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.2.1.0        4 65000    6049    6051       11    0    0 05:04:03 2
+10.2.2.0        4 65000    2760    2765       11    0    0 02:17:59 2
+DC1-L1# sh ip ro bgp
 IP Route Table for VRF "default"
 '*' denotes best ucast next-hop
 '**' denotes best mcast next-hop
 '[x/y]' denotes [preference/metric]
 '%<string>' in via output denotes VRF <string>
 
-10.1.0.1/32, ubest/mbest: 1/0
-    *via 10.2.1.0, Eth1/6, [115/41], 19:42:46, isis-UNDERLAY, L2
-10.1.0.2/32, ubest/mbest: 1/0
-    *via 10.2.2.0, Eth1/7, [115/41], 03:23:34, isis-UNDERLAY, L2
-10.1.0.4/32, ubest/mbest: 2/0
-    *via 10.2.1.0, Eth1/6, [115/81], 05:42:52, isis-UNDERLAY, L2
-    *via 10.2.2.0, Eth1/7, [115/81], 03:30:40, isis-UNDERLAY, L2
-10.1.0.5/32, ubest/mbest: 2/0
-    *via 10.2.1.0, Eth1/6, [115/81], 03:23:48, isis-UNDERLAY, L2
-    *via 10.2.2.0, Eth1/7, [115/81], 03:23:48, isis-UNDERLAY, L2
-10.2.1.2/31, ubest/mbest: 1/0
-    *via 10.2.1.0, Eth1/6, [115/80], 06:00:17, isis-UNDERLAY, L2
-10.2.1.4/31, ubest/mbest: 1/0
-    *via 10.2.1.0, Eth1/6, [115/80], 06:00:02, isis-UNDERLAY, L2
-10.2.2.2/31, ubest/mbest: 1/0
-    *via 10.2.2.0, Eth1/7, [115/80], 03:30:40, isis-UNDERLAY, L2
-10.2.2.4/31, ubest/mbest: 1/0
-    *via 10.2.2.0, Eth1/7, [115/80], 03:30:35, isis-UNDERLAY, L2
+10.0.0.4/32, ubest/mbest: 2/0
+    *via 10.2.1.0, [20/0], 02:35:34, bgp-65001, external, tag 65000
+    *via 10.2.2.0, [20/0], 02:17:53, bgp-65001, external, tag 65000
+10.0.0.5/32, ubest/mbest: 2/0
+    *via 10.2.1.0, [20/0], 02:33:15, bgp-65001, external, tag 65000
+    *via 10.2.2.0, [20/0], 02:17:35, bgp-65001, external, tag 65000
 
-DC1-L1# ping 10.1.0.5 count 2
-PING 10.1.0.5 (10.1.0.5): 56 data bytes
-64 bytes from 10.1.0.5: icmp_seq=0 ttl=253 time=27.281 ms
-64 bytes from 10.1.0.5: icmp_seq=1 ttl=253 time=9.503 ms
+DC1-L1# ping 10.0.0.5 source 10.0.0.3
+PING 10.0.0.5 (10.0.0.5) from 10.0.0.3: 56 data bytes
+64 bytes from 10.0.0.5: icmp_seq=0 ttl=253 time=30.947 ms
+64 bytes from 10.0.0.5: icmp_seq=1 ttl=253 time=11.483 ms
+64 bytes from 10.0.0.5: icmp_seq=2 ttl=253 time=9.588 ms
+64 bytes from 10.0.0.5: icmp_seq=3 ttl=253 time=11.961 ms
+64 bytes from 10.0.0.5: icmp_seq=4 ttl=253 time=11.542 ms
 
---- 10.1.0.5 ping statistics ---
-2 packets transmitted, 2 packets received, 0.00% packet loss
-round-trip min/avg/max = 9.503/18.391/27.281 ms
+--- 10.0.0.5 ping statistics ---
+5 packets transmitted, 5 packets received, 0.00% packet loss
+round-trip min/avg/max = 9.588/15.104/30.947 ms
 DC1-L1#
 
 ```
-Проверка OSPF на коммутаторе<b> DC1-L2</b>:
+Проверка BGP на коммутаторе<b> DC1-L2</b>:
 ```
-DDC1-L2# sh isis adj
-IS-IS process: UNDERLAY VRF: default
-IS-IS adjacency database:
-Legend: '!': No AF level connectivity in given topology
-System ID       SNPA            Level  State  Hold Time  Interface
-DC1-S1          5000.0001.0007  2      UP     00:00:23   Ethernet1/6
-DC1-S2          5000.0002.0007  2      UP     00:00:33   Ethernet1/7
+DC1-L2# sh ip bgp sum
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.0.0.4, local AS number 65002
+BGP table version is 10, IPv4 Unicast config peers 2, capable peers 2
+3 network entries and 5 paths using 908 bytes of memory
+BGP attribute entries [3/492], BGP AS path entries [2/20]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
 
-DC1-L2# sh ip ro isis
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.2.1.2        4 65000    3189    3240       10    0    0 02:37:04 2
+10.2.2.2        4 65000    2788    2793       10    0    0 02:19:22 2
+DC1-L2# sh ip ro bgp
 IP Route Table for VRF "default"
 '*' denotes best ucast next-hop
 '**' denotes best mcast next-hop
 '[x/y]' denotes [preference/metric]
 '%<string>' in via output denotes VRF <string>
 
-10.1.0.1/32, ubest/mbest: 1/0
-    *via 10.2.1.2, Eth1/6, [115/41], 05:50:18, isis-UNDERLAY, L2
-10.1.0.2/32, ubest/mbest: 1/0
-    *via 10.2.2.2, Eth1/7, [115/41], 03:27:27, isis-UNDERLAY, L2
-10.1.0.3/32, ubest/mbest: 2/0
-    *via 10.2.1.2, Eth1/6, [115/81], 05:50:17, isis-UNDERLAY, L2
-    *via 10.2.2.2, Eth1/7, [115/81], 03:34:33, isis-UNDERLAY, L2
-10.1.0.5/32, ubest/mbest: 2/0
-    *via 10.2.1.2, Eth1/6, [115/81], 03:27:41, isis-UNDERLAY, L2
-    *via 10.2.2.2, Eth1/7, [115/81], 03:27:41, isis-UNDERLAY, L2
-10.2.1.0/31, ubest/mbest: 1/0
-    *via 10.2.1.2, Eth1/6, [115/80], 05:50:18, isis-UNDERLAY, L2
-10.2.1.4/31, ubest/mbest: 1/0
-    *via 10.2.1.2, Eth1/6, [115/80], 05:50:18, isis-UNDERLAY, L2
-10.2.2.0/31, ubest/mbest: 1/0
-    *via 10.2.2.2, Eth1/7, [115/80], 03:34:33, isis-UNDERLAY, L2
-10.2.2.4/31, ubest/mbest: 1/0
-    *via 10.2.2.2, Eth1/7, [115/80], 03:34:29, isis-UNDERLAY, L2
+10.0.0.3/32, ubest/mbest: 2/0
+    *via 10.2.1.2, [20/0], 02:37:08, bgp-65002, external, tag 65000
+    *via 10.2.2.2, [20/0], 02:19:27, bgp-65002, external, tag 65000
+10.0.0.5/32, ubest/mbest: 2/0
+    *via 10.2.1.2, [20/0], 02:34:49, bgp-65002, external, tag 65000
+    *via 10.2.2.2, [20/0], 02:19:09, bgp-65002, external, tag 65000
 
-DC1-L2# ping 10.1.0.5
-PING 10.1.0.5 (10.1.0.5): 56 data bytes
-64 bytes from 10.1.0.5: icmp_seq=0 ttl=253 time=26.868 ms
-64 bytes from 10.1.0.5: icmp_seq=1 ttl=253 time=6.487 ms
-64 bytes from 10.1.0.5: icmp_seq=2 ttl=253 time=7.886 ms
-64 bytes from 10.1.0.5: icmp_seq=3 ttl=253 time=14.912 ms
-64 bytes from 10.1.0.5: icmp_seq=4 ttl=253 time=7.769 ms
+DC1-L2# ping 10.0.0.3 source 10.0.0.4
+PING 10.0.0.3 (10.0.0.3) from 10.0.0.4: 56 data bytes
+64 bytes from 10.0.0.3: icmp_seq=0 ttl=253 time=25.173 ms
+64 bytes from 10.0.0.3: icmp_seq=1 ttl=253 time=7.888 ms
+64 bytes from 10.0.0.3: icmp_seq=2 ttl=253 time=11.102 ms
+64 bytes from 10.0.0.3: icmp_seq=3 ttl=253 time=7.194 ms
+64 bytes from 10.0.0.3: icmp_seq=4 ttl=253 time=7.087 ms
 
---- 10.1.0.5 ping statistics ---
+--- 10.0.0.3 ping statistics ---
 5 packets transmitted, 5 packets received, 0.00% packet loss
-round-trip min/avg/max = 6.487/12.784/26.868 ms
+round-trip min/avg/max = 7.087/11.688/25.173 ms
 DC1-L2#
 
 ```
 
-Проверка OSPF на коммутаторе <b>DC1-L3</b>:
+Проверка BGP на коммутаторе <b>DC1-L3</b>:
 ```
-DC1-L3# sh isis adj
-IS-IS process: UNDERLAY VRF: default
-IS-IS adjacency database:
-Legend: '!': No AF level connectivity in given topology
-System ID       SNPA            Level  State  Hold Time  Interface
-DC1-S1          5000.0001.0007  2      UP     00:00:27   Ethernet1/6
-DC1-S2          5000.0002.0007  2      UP     00:00:26   Ethernet1/7
+DC1-L3# sh ip bgp sum
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.0.0.5, local AS number 65003
+BGP table version is 11, IPv4 Unicast config peers 2, capable peers 2
+3 network entries and 5 paths using 908 bytes of memory
+BGP attribute entries [3/492], BGP AS path entries [2/20]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
 
-DC1-L3# sh ip ro isis
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.2.1.4        4 65000    3146    3144       11    0    0 02:37:13 2
+10.2.2.4        4 65000    2833    2838       11    0    0 02:21:33 2
+
+DC1-L3# sh ip ro bgp
 IP Route Table for VRF "default"
 '*' denotes best ucast next-hop
 '**' denotes best mcast next-hop
 '[x/y]' denotes [preference/metric]
 '%<string>' in via output denotes VRF <string>
 
-10.1.0.1/32, ubest/mbest: 1/0
-    *via 10.2.1.4, Eth1/6, [115/41], 04:04:06, isis-UNDERLAY, L2
-10.1.0.2/32, ubest/mbest: 1/0
-    *via 10.2.2.4, Eth1/7, [115/41], 03:28:38, isis-UNDERLAY, L2
-10.1.0.3/32, ubest/mbest: 2/0
-    *via 10.2.1.4, Eth1/6, [115/81], 04:04:05, isis-UNDERLAY, L2
-    *via 10.2.2.4, Eth1/7, [115/81], 03:35:39, isis-UNDERLAY, L2
-10.1.0.4/32, ubest/mbest: 2/0
-    *via 10.2.1.4, Eth1/6, [115/81], 04:04:05, isis-UNDERLAY, L2
-    *via 10.2.2.4, Eth1/7, [115/81], 03:35:39, isis-UNDERLAY, L2
-10.2.1.0/31, ubest/mbest: 1/0
-    *via 10.2.1.4, Eth1/6, [115/80], 04:04:06, isis-UNDERLAY, L2
-10.2.1.2/31, ubest/mbest: 1/0
-    *via 10.2.1.4, Eth1/6, [115/80], 04:04:06, isis-UNDERLAY, L2
-10.2.2.0/31, ubest/mbest: 1/0
-    *via 10.2.2.4, Eth1/7, [115/80], 03:35:39, isis-UNDERLAY, L2
-10.2.2.2/31, ubest/mbest: 1/0
-    *via 10.2.2.4, Eth1/7, [115/80], 03:35:39, isis-UNDERLAY, L2
+10.0.0.3/32, ubest/mbest: 2/0
+    *via 10.2.1.4, [20/0], 02:37:23, bgp-65003, external, tag 65000
+    *via 10.2.2.4, [20/0], 02:21:44, bgp-65003, external, tag 65000
+10.0.0.4/32, ubest/mbest: 2/0
+    *via 10.2.1.4, [20/0], 02:37:23, bgp-65003, external, tag 65000
+    *via 10.2.2.4, [20/0], 02:21:44, bgp-65003, external, tag 65000
 
-DC1-L3# ping 10.1.0.3
-PING 10.1.0.3 (10.1.0.3): 56 data bytes
-64 bytes from 10.1.0.3: icmp_seq=0 ttl=253 time=29.206 ms
-64 bytes from 10.1.0.3: icmp_seq=1 ttl=253 time=9.916 ms
-64 bytes from 10.1.0.3: icmp_seq=2 ttl=253 time=5.31 ms
-64 bytes from 10.1.0.3: icmp_seq=3 ttl=253 time=8.332 ms
-64 bytes from 10.1.0.3: icmp_seq=4 ttl=253 time=9.023 ms
+DC1-L3# ping 10.0.0.4 source 10.0.0.5
+PING 10.0.0.4 (10.0.0.4) from 10.0.0.5: 56 data bytes
+64 bytes from 10.0.0.4: icmp_seq=0 ttl=253 time=52.722 ms
+64 bytes from 10.0.0.4: icmp_seq=1 ttl=253 time=10.848 ms
+64 bytes from 10.0.0.4: icmp_seq=2 ttl=253 time=12.241 ms
+64 bytes from 10.0.0.4: icmp_seq=3 ttl=253 time=11.284 ms
+64 bytes from 10.0.0.4: icmp_seq=4 ttl=253 time=11.641 ms
 
---- 10.1.0.3 ping statistics ---
+--- 10.0.0.4 ping statistics ---
 5 packets transmitted, 5 packets received, 0.00% packet loss
-round-trip min/avg/max = 5.31/12.357/29.206 ms
+round-trip min/avg/max = 10.848/19.747/52.722 ms
 DC1-L3#
 
 ```
 
-Проверка OSPF на коммутаторе <b>DC1-S1</b>:
+Проверка BGP на коммутаторе <b>DC1-S1</b>:
 ```
-DC1-S1# sh isis adj
-IS-IS process: UNDERLAY VRF: default
-IS-IS adjacency database:
-Legend: '!': No AF level connectivity in given topology
-System ID       SNPA            Level  State  Hold Time  Interface
-DC1-L1          5000.0003.0007  2      UP     00:00:08   Ethernet1/1
-DC1-L2          5000.0004.0007  2      UP     00:00:08   Ethernet1/2
-DC1-L3          5000.0005.0007  2      UP     00:00:06   Ethernet1/3
+DC1-S1# sh ip bgp sum
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.0.0.1, local AS number 65000
+BGP table version is 8, IPv4 Unicast config peers 3, capable peers 3
+3 network entries and 3 paths using 660 bytes of memory
+BGP attribute entries [3/492], BGP AS path entries [3/18]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
 
-DC1-S1# sh ip ro isis
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.2.1.1        4 65001    6187    6185        8    0    0 05:10:58 1
+10.2.1.3        4 65002    3271    3270        8    0    0 02:42:23 1
+10.2.1.5        4 65003    3201    3209        8    0    0 02:40:04 1
+DC1-S1# sh ip ro bgp
 IP Route Table for VRF "default"
 '*' denotes best ucast next-hop
 '**' denotes best mcast next-hop
 '[x/y]' denotes [preference/metric]
 '%<string>' in via output denotes VRF <string>
 
-10.1.0.2/32, ubest/mbest: 3/0
-    *via 10.2.1.1, Eth1/1, [115/81], 03:30:05, isis-UNDERLAY, L2
-    *via 10.2.1.3, Eth1/2, [115/81], 03:30:05, isis-UNDERLAY, L2
-    *via 10.2.1.5, Eth1/3, [115/81], 03:30:05, isis-UNDERLAY, L2
-10.1.0.3/32, ubest/mbest: 1/0
-    *via 10.2.1.1, Eth1/1, [115/41], 19:49:56, isis-UNDERLAY, L2
-10.1.0.4/32, ubest/mbest: 1/0
-    *via 10.2.1.3, Eth1/2, [115/41], 05:49:23, isis-UNDERLAY, L2
-10.1.0.5/32, ubest/mbest: 1/0
-    *via 10.2.1.5, Eth1/3, [115/41], 03:30:19, isis-UNDERLAY, L2
-10.2.2.0/31, ubest/mbest: 1/0
-    *via 10.2.1.1, Eth1/1, [115/80], 04:12:11, isis-UNDERLAY, L2
-10.2.2.2/31, ubest/mbest: 1/0
-    *via 10.2.1.3, Eth1/2, [115/80], 05:52:19, isis-UNDERLAY, L2
-10.2.2.4/31, ubest/mbest: 1/0
-    *via 10.2.1.5, Eth1/3, [115/80], 04:05:28, isis-UNDERLAY, L2
+10.0.0.3/32, ubest/mbest: 1/0
+    *via 10.2.1.1, [20/0], 05:11:05, bgp-65000, external, tag 65001
+10.0.0.4/32, ubest/mbest: 1/0
+    *via 10.2.1.3, [20/0], 02:42:30, bgp-65000, external, tag 65002
+10.0.0.5/32, ubest/mbest: 1/0
+    *via 10.2.1.5, [20/0], 02:40:11, bgp-65000, external, tag 65003
 
-DC1-S1# ping 10.1.0.2
-PING 10.1.0.2 (10.1.0.2): 56 data bytes
-64 bytes from 10.1.0.2: icmp_seq=0 ttl=253 time=23.935 ms
-64 bytes from 10.1.0.2: icmp_seq=1 ttl=253 time=7.797 ms
-64 bytes from 10.1.0.2: icmp_seq=2 ttl=253 time=5.375 ms
-64 bytes from 10.1.0.2: icmp_seq=3 ttl=253 time=5.459 ms
-64 bytes from 10.1.0.2: icmp_seq=4 ttl=253 time=5.291 ms
-
---- 10.1.0.2 ping statistics ---
-5 packets transmitted, 5 packets received, 0.00% packet loss
-round-trip min/avg/max = 5.291/9.571/23.935 ms
 DC1-S1#
+DC1-S1# ping 10.0.0.3
+PING 10.0.0.3 (10.0.0.3): 56 data bytes
+64 bytes from 10.0.0.3: icmp_seq=0 ttl=254 time=9.481 ms
+64 bytes from 10.0.0.3: icmp_seq=1 ttl=254 time=2.17 ms
+64 bytes from 10.0.0.3: icmp_seq=2 ttl=254 time=2.244 ms
+64 bytes from 10.0.0.3: icmp_seq=3 ttl=254 time=2.194 ms
+64 bytes from 10.0.0.3: icmp_seq=4 ttl=254 time=1.837 ms
+
+--- 10.0.0.3 ping statistics ---
+5 packets transmitted, 5 packets received, 0.00% packet loss
+round-trip min/avg/max = 1.837/3.585/9.481 ms
 
 ```
 
-Проверка OSPF на коммутаторе <b>DC1-S2</b>:
+Проверка BGP на коммутаторе <b>DC1-S2</b>:
 ```
-DC1-S2# sh isis adj
-IS-IS process: UNDERLAY VRF: default
-IS-IS adjacency database:
-Legend: '!': No AF level connectivity in given topology
-System ID       SNPA            Level  State  Hold Time  Interface
-DC1-L1          5000.0003.0007  2      UP     00:00:09   Ethernet1/1
-DC1-L2          5000.0004.0007  2      UP     00:00:08   Ethernet1/2
-DC1-L3          5000.0005.0007  2      UP     00:00:08   Ethernet1/3
+DC1-S2# sh ip bgp sum
+BGP summary information for VRF default, address family IPv4 Unicast
+BGP router identifier 10.0.0.2, local AS number 65000
+BGP table version is 8, IPv4 Unicast config peers 3, capable peers 3
+3 network entries and 3 paths using 660 bytes of memory
+BGP attribute entries [3/492], BGP AS path entries [3/18]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
 
-DC1-S2# sh ip ro isis
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.2.2.1        4 65001    2977    2975        8    0    0 02:28:50 1
+10.2.2.3        4 65002    2974    2971        8    0    0 02:28:39 1
+10.2.2.5        4 65003    2967    2966        8    0    0 02:28:21 1
+DC1-S2# sh ip ro bgp
 IP Route Table for VRF "default"
 '*' denotes best ucast next-hop
 '**' denotes best mcast next-hop
 '[x/y]' denotes [preference/metric]
 '%<string>' in via output denotes VRF <string>
 
-10.1.0.1/32, ubest/mbest: 3/0
-    *via 10.2.2.1, Eth1/1, [115/81], 03:39:23, isis-UNDERLAY, L2
-    *via 10.2.2.3, Eth1/2, [115/81], 03:39:17, isis-UNDERLAY, L2
-    *via 10.2.2.5, Eth1/3, [115/81], 03:39:11, isis-UNDERLAY, L2
-10.1.0.3/32, ubest/mbest: 1/0
-    *via 10.2.2.1, Eth1/1, [115/41], 03:39:26, isis-UNDERLAY, L2
-10.1.0.4/32, ubest/mbest: 1/0
-    *via 10.2.2.3, Eth1/2, [115/41], 03:39:17, isis-UNDERLAY, L2
-10.1.0.5/32, ubest/mbest: 1/0
-    *via 10.2.2.5, Eth1/3, [115/41], 03:32:25, isis-UNDERLAY, L2
-10.2.1.0/31, ubest/mbest: 1/0
-    *via 10.2.2.1, Eth1/1, [115/80], 03:39:26, isis-UNDERLAY, L2
-10.2.1.2/31, ubest/mbest: 1/0
-    *via 10.2.2.3, Eth1/2, [115/80], 03:39:17, isis-UNDERLAY, L2
-10.2.1.4/31, ubest/mbest: 1/0
-    *via 10.2.2.5, Eth1/3, [115/80], 03:39:11, isis-UNDERLAY, L2
+10.0.0.3/32, ubest/mbest: 1/0
+    *via 10.2.2.1, [20/0], 02:28:56, bgp-65000, external, tag 65001
+10.0.0.4/32, ubest/mbest: 1/0
+    *via 10.2.2.3, [20/0], 02:28:45, bgp-65000, external, tag 65002
+10.0.0.5/32, ubest/mbest: 1/0
+    *via 10.2.2.5, [20/0], 02:28:28, bgp-65000, external, tag 65003
 
-DC1-S2# ping 10.1.0.1
-PING 10.1.0.1 (10.1.0.1): 56 data bytes
-64 bytes from 10.1.0.1: icmp_seq=0 ttl=253 time=27.402 ms
-64 bytes from 10.1.0.1: icmp_seq=1 ttl=253 time=6.043 ms
-64 bytes from 10.1.0.1: icmp_seq=2 ttl=253 time=5.674 ms
-64 bytes from 10.1.0.1: icmp_seq=3 ttl=253 time=5.629 ms
-64 bytes from 10.1.0.1: icmp_seq=4 ttl=253 time=26.207 ms
+DC1-S2# ping 10.0.0.4
+PING 10.0.0.4 (10.0.0.4): 56 data bytes
+64 bytes from 10.0.0.4: icmp_seq=0 ttl=254 time=14.182 ms
+64 bytes from 10.0.0.4: icmp_seq=1 ttl=254 time=4.342 ms
+64 bytes from 10.0.0.4: icmp_seq=2 ttl=254 time=3.411 ms
+64 bytes from 10.0.0.4: icmp_seq=3 ttl=254 time=2.696 ms
+64 bytes from 10.0.0.4: icmp_seq=4 ttl=254 time=2.571 ms
 
---- 10.1.0.1 ping statistics ---
+--- 10.0.0.4 ping statistics ---
 5 packets transmitted, 5 packets received, 0.00% packet loss
-round-trip min/avg/max = 5.629/14.19/27.402 ms
+round-trip min/avg/max = 2.571/5.44/14.182 ms
 DC1-S2#
-
 
 ```
