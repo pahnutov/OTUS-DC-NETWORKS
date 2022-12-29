@@ -57,16 +57,19 @@ router bgp 65000
   neighbor 10.2.1.1
     remote-as 65001
     description DC1-L1
+    password 7 1454372F2F572F2F27
     timers 3 9
     address-family ipv4 unicast
   neighbor 10.2.1.3
     remote-as 65002
     description DC1-L2
+    password 7 1454372F2F572F2F27
     timers 3 9
     address-family ipv4 unicast
   neighbor 10.2.1.5
     remote-as 65003
     description DC1-L3
+    password 7 1454372F2F572F2F27
     timers 3 9
     address-family ipv4 unicast
 
@@ -118,16 +121,19 @@ router bgp 65000
   neighbor 10.2.2.1
     remote-as 65001
     description DC1-L1
+    password 7 1454372F2F572F2F27
     timers 3 9
     address-family ipv4 unicast
   neighbor 10.2.2.3
     remote-as 65002
     description DC1-L2
+    password 7 1454372F2F572F2F27
     timers 3 9
     address-family ipv4 unicast
   neighbor 10.2.2.5
     remote-as 65003
     description DC1-L3
+    password 7 1454372F2F572F2F27
     timers 3 9
     address-family ipv4 unicast
 
@@ -144,6 +150,8 @@ feature  bgp
 
 route-map REDISTR-CONNECTED permit 10
   match interface loopback0
+route-map REDISTR-CONNECTED permit 20
+  match interface loopback1
 
 interface Ethernet1/6
   description to DC1-S1
@@ -176,8 +184,25 @@ router bgp 65001
     maximum-paths 64
   template peer SPINE
     remote-as 65000
+    password 7 1454372F2F572F2F27
     timers 3 9
     address-family ipv4 unicast
+  neighbor 10.0.0.4
+    remote-as 65002
+    description peer to DC1-L2
+    password 7 1454372F2F572F2F27
+    update-source loopback0
+    ebgp-multihop 2
+    address-family ipv4 unicast
+    address-family l2vpn evpn
+  neighbor 10.0.0.5
+    remote-as 65003
+    description peer to DC1-L3
+    password 7 1454372F2F572F2F27
+    update-source loopback0
+    ebgp-multihop 2
+    address-family ipv4 unicast
+    address-family l2vpn evpn
   neighbor 10.2.1.0
     inherit peer SPINE
     description peer to DC1-S1
@@ -197,6 +222,9 @@ feature bgp
 
 route-map REDISTR-CONNECTED permit 10
   match interface loopback0
+route-map REDISTR-CONNECTED permit 20
+  match interface loopback1
+
 
 interface Ethernet1/6
   description to DC1-S1
@@ -229,14 +257,31 @@ interface Ethernet1/7
       maximum-paths 64
     template peer SPINE
       remote-as 65000
+      password 7 1454372F2F572F2F27
       timers 3 9
       address-family ipv4 unicast
+    neighbor 10.0.0.3
+      remote-as 65001
+      description peer to DC1-L1
+      password 7 1454372F2F572F2F27
+      update-source loopback0
+      ebgp-multihop 2
+      address-family ipv4 unicast
+      address-family l2vpn evpn
+    neighbor 10.0.0.5
+      remote-as 65003
+      description peer to DC1-L3
+      password 7 1454372F2F572F2F27
+      update-source loopback0
+      ebgp-multihop 2
+      address-family ipv4 unicast
+      address-family l2vpn evpn
     neighbor 10.2.1.2
       inherit peer SPINE
       description peer to DC1-S1
     neighbor 10.2.2.2
       inherit peer SPINE
-      description peer to DC1-S2
+    description peer to DC1-S2
 
 ```
 </details>
@@ -250,6 +295,9 @@ feature bgp
 
 route-map REDISTR-CONNECTED permit 10
   match interface loopback0
+route-map REDISTR-CONNECTED permit 20
+  match interface loopback1
+
 
 interface Ethernet1/6
   description to DC1-S1
@@ -282,14 +330,32 @@ router bgp 65003
     maximum-paths 64
   template peer SPINE
     remote-as 65000
+    password 7 1454372F2F572F2F27
     timers 3 9
     address-family ipv4 unicast
+  neighbor 10.0.0.3
+    remote-as 65001
+    description peer to DC1-L1
+    password 7 1454372F2F572F2F27
+    update-source loopback0
+    ebgp-multihop 2
+    address-family ipv4 unicast
+    address-family l2vpn evpn
+  neighbor 10.0.0.4
+    remote-as 65002
+    description peer to DC1-L2
+    password 7 1454372F2F572F2F27
+    update-source loopback0
+    ebgp-multihop 2
+    address-family ipv4 unicast
+    address-family l2vpn evpn
   neighbor 10.2.1.4
     inherit peer SPINE
     description peer to DC1-S1
   neighbor 10.2.2.4
     inherit peer SPINE
     description peer to DC1-S2
+
 
 ```
 </details>
@@ -298,17 +364,22 @@ router bgp 65003
 
 Проверка BGP на коммутаторе <b>DC1-L1</b>:
 ```
-DC1-L1# sh ip bgp summ
+
+DC1-L1# sh ip bgp sum
 BGP summary information for VRF default, address family IPv4 Unicast
 BGP router identifier 10.0.0.3, local AS number 65001
-BGP table version is 11, IPv4 Unicast config peers 2, capable peers 2
-3 network entries and 5 paths using 908 bytes of memory
-BGP attribute entries [3/492], BGP AS path entries [2/20]
+BGP table version is 30532, IPv4 Unicast config peers 4, capable peers 4
+6 network entries and 18 paths using 2808 bytes of memory
+BGP attribute entries [7/1148], BGP AS path entries [6/56]
 BGP community entries [0/0], BGP clusterlist entries [0/0]
 
 Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
-10.2.1.0        4 65000    6049    6051       11    0    0 05:04:03 2
-10.2.2.0        4 65000    2760    2765       11    0    0 02:17:59 2
+10.0.0.4        4 65002    6501    2442    30532    0    0 01:49:50 4
+10.0.0.5        4 65003    3924    1237    30532    0    0 00:39:10 4
+10.2.1.0        4 65000   85184   87756    30532    0    0 02:10:47 4
+10.2.2.0        4 65000   84933   87434    30532    0    0 01:56:21 4
+
+
 DC1-L1# sh ip ro bgp
 IP Route Table for VRF "default"
 '*' denotes best ucast next-hop
@@ -317,24 +388,17 @@ IP Route Table for VRF "default"
 '%<string>' in via output denotes VRF <string>
 
 10.0.0.4/32, ubest/mbest: 2/0
-    *via 10.2.1.0, [20/0], 02:35:34, bgp-65001, external, tag 65000
-    *via 10.2.2.0, [20/0], 02:17:53, bgp-65001, external, tag 65000
+    *via 10.2.1.0, [20/0], 00:00:01, bgp-65001, external, tag 65000
+    *via 10.2.2.0, [20/0], 00:00:01, bgp-65001, external, tag 65000
 10.0.0.5/32, ubest/mbest: 2/0
-    *via 10.2.1.0, [20/0], 02:33:15, bgp-65001, external, tag 65000
-    *via 10.2.2.0, [20/0], 02:17:35, bgp-65001, external, tag 65000
-
-DC1-L1# ping 10.0.0.5 source 10.0.0.3
-PING 10.0.0.5 (10.0.0.5) from 10.0.0.3: 56 data bytes
-64 bytes from 10.0.0.5: icmp_seq=0 ttl=253 time=30.947 ms
-64 bytes from 10.0.0.5: icmp_seq=1 ttl=253 time=11.483 ms
-64 bytes from 10.0.0.5: icmp_seq=2 ttl=253 time=9.588 ms
-64 bytes from 10.0.0.5: icmp_seq=3 ttl=253 time=11.961 ms
-64 bytes from 10.0.0.5: icmp_seq=4 ttl=253 time=11.542 ms
-
---- 10.0.0.5 ping statistics ---
-5 packets transmitted, 5 packets received, 0.00% packet loss
-round-trip min/avg/max = 9.588/15.104/30.947 ms
-DC1-L1#
+    *via 10.2.1.0, [20/0], 00:00:01, bgp-65001, external, tag 65000
+    *via 10.2.2.0, [20/0], 00:00:01, bgp-65001, external, tag 65000
+10.1.0.4/32, ubest/mbest: 2/0
+    *via 10.2.1.0, [20/0], 00:00:01, bgp-65001, external, tag 65000
+    *via 10.2.2.0, [20/0], 00:00:01, bgp-65001, external, tag 65000
+10.1.0.5/32, ubest/mbest: 2/0
+    *via 10.2.1.0, [20/0], 00:00:01, bgp-65001, external, tag 65000
+    *via 10.2.2.0, [20/0], 00:00:01, bgp-65001, external, tag 65000
 
 ```
 Проверка BGP на коммутаторе<b> DC1-L2</b>:
@@ -342,14 +406,17 @@ DC1-L1#
 DC1-L2# sh ip bgp sum
 BGP summary information for VRF default, address family IPv4 Unicast
 BGP router identifier 10.0.0.4, local AS number 65002
-BGP table version is 10, IPv4 Unicast config peers 2, capable peers 2
-3 network entries and 5 paths using 908 bytes of memory
-BGP attribute entries [3/492], BGP AS path entries [2/20]
+BGP table version is 27036, IPv4 Unicast config peers 4, capable peers 4
+6 network entries and 18 paths using 2808 bytes of memory
+BGP attribute entries [7/1148], BGP AS path entries [6/60]
 BGP community entries [0/0], BGP clusterlist entries [0/0]
 
 Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
-10.2.1.2        4 65000    3189    3240       10    0    0 02:37:04 2
-10.2.2.2        4 65000    2788    2793       10    0    0 02:19:22 2
+10.0.0.3        4 65001    6359    2127    27036    0    0 01:51:26 4
+10.0.0.5        4 65003    3221    1719    27036    0    0 00:02:41 4
+10.2.1.2        4 65000   85039   87469    27036    0    0 02:03:19 4
+10.2.2.2        4 65000   85149   87545    27036    0    0 01:58:02 4
+
 DC1-L2# sh ip ro bgp
 IP Route Table for VRF "default"
 '*' denotes best ucast next-hop
@@ -358,24 +425,17 @@ IP Route Table for VRF "default"
 '%<string>' in via output denotes VRF <string>
 
 10.0.0.3/32, ubest/mbest: 2/0
-    *via 10.2.1.2, [20/0], 02:37:08, bgp-65002, external, tag 65000
-    *via 10.2.2.2, [20/0], 02:19:27, bgp-65002, external, tag 65000
+    *via 10.2.1.2, [20/0], 00:00:03, bgp-65002, external, tag 65000
+    *via 10.2.2.2, [20/0], 00:00:03, bgp-65002, external, tag 65000
 10.0.0.5/32, ubest/mbest: 2/0
-    *via 10.2.1.2, [20/0], 02:34:49, bgp-65002, external, tag 65000
-    *via 10.2.2.2, [20/0], 02:19:09, bgp-65002, external, tag 65000
-
-DC1-L2# ping 10.0.0.3 source 10.0.0.4
-PING 10.0.0.3 (10.0.0.3) from 10.0.0.4: 56 data bytes
-64 bytes from 10.0.0.3: icmp_seq=0 ttl=253 time=25.173 ms
-64 bytes from 10.0.0.3: icmp_seq=1 ttl=253 time=7.888 ms
-64 bytes from 10.0.0.3: icmp_seq=2 ttl=253 time=11.102 ms
-64 bytes from 10.0.0.3: icmp_seq=3 ttl=253 time=7.194 ms
-64 bytes from 10.0.0.3: icmp_seq=4 ttl=253 time=7.087 ms
-
---- 10.0.0.3 ping statistics ---
-5 packets transmitted, 5 packets received, 0.00% packet loss
-round-trip min/avg/max = 7.087/11.688/25.173 ms
-DC1-L2#
+    *via 10.2.1.2, [20/0], 00:00:03, bgp-65002, external, tag 65000
+    *via 10.2.2.2, [20/0], 00:00:03, bgp-65002, external, tag 65000
+10.1.0.3/32, ubest/mbest: 2/0
+    *via 10.2.1.2, [20/0], 00:00:03, bgp-65002, external, tag 65000
+    *via 10.2.2.2, [20/0], 00:00:03, bgp-65002, external, tag 65000
+10.1.0.5/32, ubest/mbest: 2/0
+    *via 10.2.1.2, [20/0], 00:00:03, bgp-65002, external, tag 65000
+    *via 10.2.2.2, [20/0], 00:00:03, bgp-65002, external, tag 65000
 
 ```
 
@@ -384,14 +444,16 @@ DC1-L2#
 DC1-L3# sh ip bgp sum
 BGP summary information for VRF default, address family IPv4 Unicast
 BGP router identifier 10.0.0.5, local AS number 65003
-BGP table version is 11, IPv4 Unicast config peers 2, capable peers 2
-3 network entries and 5 paths using 908 bytes of memory
-BGP attribute entries [3/492], BGP AS path entries [2/20]
+BGP table version is 18720, IPv4 Unicast config peers 4, capable peers 4
+6 network entries and 18 paths using 2808 bytes of memory
+BGP attribute entries [7/1148], BGP AS path entries [6/60]
 BGP community entries [0/0], BGP clusterlist entries [0/0]
 
 Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
-10.2.1.4        4 65000    3146    3144       11    0    0 02:37:13 2
-10.2.2.4        4 65000    2833    2838       11    0    0 02:21:33 2
+10.0.0.3        4 65001    3831    1352    18720    0    0 00:42:15 4
+10.0.0.4        4 65002    3110    1349    18720    0    0 00:00:49 4
+10.2.1.4        4 65000   85067   86721    18720    0    0 02:04:04 4
+10.2.2.4        4 65000   85183   86858    18720    0    0 01:59:14 4
 
 DC1-L3# sh ip ro bgp
 IP Route Table for VRF "default"
@@ -401,24 +463,17 @@ IP Route Table for VRF "default"
 '%<string>' in via output denotes VRF <string>
 
 10.0.0.3/32, ubest/mbest: 2/0
-    *via 10.2.1.4, [20/0], 02:37:23, bgp-65003, external, tag 65000
-    *via 10.2.2.4, [20/0], 02:21:44, bgp-65003, external, tag 65000
+    *via 10.2.1.4, [20/0], 00:00:03, bgp-65003, external, tag 65000
+    *via 10.2.2.4, [20/0], 00:00:03, bgp-65003, external, tag 65000
 10.0.0.4/32, ubest/mbest: 2/0
-    *via 10.2.1.4, [20/0], 02:37:23, bgp-65003, external, tag 65000
-    *via 10.2.2.4, [20/0], 02:21:44, bgp-65003, external, tag 65000
-
-DC1-L3# ping 10.0.0.4 source 10.0.0.5
-PING 10.0.0.4 (10.0.0.4) from 10.0.0.5: 56 data bytes
-64 bytes from 10.0.0.4: icmp_seq=0 ttl=253 time=52.722 ms
-64 bytes from 10.0.0.4: icmp_seq=1 ttl=253 time=10.848 ms
-64 bytes from 10.0.0.4: icmp_seq=2 ttl=253 time=12.241 ms
-64 bytes from 10.0.0.4: icmp_seq=3 ttl=253 time=11.284 ms
-64 bytes from 10.0.0.4: icmp_seq=4 ttl=253 time=11.641 ms
-
---- 10.0.0.4 ping statistics ---
-5 packets transmitted, 5 packets received, 0.00% packet loss
-round-trip min/avg/max = 10.848/19.747/52.722 ms
-DC1-L3#
+    *via 10.2.1.4, [20/0], 00:00:03, bgp-65003, external, tag 65000
+    *via 10.2.2.4, [20/0], 00:00:03, bgp-65003, external, tag 65000
+10.1.0.3/32, ubest/mbest: 2/0
+    *via 10.2.1.4, [20/0], 00:00:03, bgp-65003, external, tag 65000
+    *via 10.2.2.4, [20/0], 00:00:03, bgp-65003, external, tag 65000
+10.1.0.4/32, ubest/mbest: 2/0
+    *via 10.2.1.4, [20/0], 00:00:03, bgp-65003, external, tag 65000
+    *via 10.2.2.4, [20/0], 00:00:03, bgp-65003, external, tag 65000
 
 ```
 
@@ -427,15 +482,16 @@ DC1-L3#
 DC1-S1# sh ip bgp sum
 BGP summary information for VRF default, address family IPv4 Unicast
 BGP router identifier 10.0.0.1, local AS number 65000
-BGP table version is 8, IPv4 Unicast config peers 3, capable peers 3
-3 network entries and 3 paths using 660 bytes of memory
-BGP attribute entries [3/492], BGP AS path entries [3/18]
+BGP table version is 18914, IPv4 Unicast config peers 3, capable peers 3
+6 network entries and 12 paths using 2064 bytes of memory
+BGP attribute entries [6/984], BGP AS path entries [6/48]
 BGP community entries [0/0], BGP clusterlist entries [0/0]
 
 Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
-10.2.1.1        4 65001    6187    6185        8    0    0 05:10:58 1
-10.2.1.3        4 65002    3271    3270        8    0    0 02:42:23 1
-10.2.1.5        4 65003    3201    3209        8    0    0 02:40:04 1
+10.2.1.1        4 65001   91388   85267    18914    0    0 02:15:36 2
+10.2.1.3        4 65002   91057   85095    18914    0    0 02:06:31 4
+10.2.1.5        4 65003   89201   85088    18914    0    0 02:05:47 4
+
 DC1-S1# sh ip ro bgp
 IP Route Table for VRF "default"
 '*' denotes best ucast next-hop
@@ -444,24 +500,17 @@ IP Route Table for VRF "default"
 '%<string>' in via output denotes VRF <string>
 
 10.0.0.3/32, ubest/mbest: 1/0
-    *via 10.2.1.1, [20/0], 05:11:05, bgp-65000, external, tag 65001
+    *via 10.2.1.1, [20/0], 02:15:43, bgp-65000, external, tag 65001
 10.0.0.4/32, ubest/mbest: 1/0
-    *via 10.2.1.3, [20/0], 02:42:30, bgp-65000, external, tag 65002
+    *via 10.2.1.3, [20/0], 02:06:39, bgp-65000, external, tag 65002
 10.0.0.5/32, ubest/mbest: 1/0
-    *via 10.2.1.5, [20/0], 02:40:11, bgp-65000, external, tag 65003
-
-DC1-S1#
-DC1-S1# ping 10.0.0.3
-PING 10.0.0.3 (10.0.0.3): 56 data bytes
-64 bytes from 10.0.0.3: icmp_seq=0 ttl=254 time=9.481 ms
-64 bytes from 10.0.0.3: icmp_seq=1 ttl=254 time=2.17 ms
-64 bytes from 10.0.0.3: icmp_seq=2 ttl=254 time=2.244 ms
-64 bytes from 10.0.0.3: icmp_seq=3 ttl=254 time=2.194 ms
-64 bytes from 10.0.0.3: icmp_seq=4 ttl=254 time=1.837 ms
-
---- 10.0.0.3 ping statistics ---
-5 packets transmitted, 5 packets received, 0.00% packet loss
-round-trip min/avg/max = 1.837/3.585/9.481 ms
+    *via 10.2.1.5, [20/0], 02:05:55, bgp-65000, external, tag 65003
+10.1.0.3/32, ubest/mbest: 1/0
+    *via 10.2.1.1, [20/0], 02:15:43, bgp-65000, external, tag 65001
+10.1.0.4/32, ubest/mbest: 1/0
+    *via 10.2.1.3, [20/0], 02:06:39, bgp-65000, external, tag 65002
+10.1.0.5/32, ubest/mbest: 1/0
+    *via 10.2.1.5, [20/0], 02:05:55, bgp-65000, external, tag 65003
 
 ```
 
@@ -470,15 +519,16 @@ round-trip min/avg/max = 1.837/3.585/9.481 ms
 DC1-S2# sh ip bgp sum
 BGP summary information for VRF default, address family IPv4 Unicast
 BGP router identifier 10.0.0.2, local AS number 65000
-BGP table version is 8, IPv4 Unicast config peers 3, capable peers 3
-3 network entries and 3 paths using 660 bytes of memory
-BGP attribute entries [3/492], BGP AS path entries [3/18]
+BGP table version is 18952, IPv4 Unicast config peers 3, capable peers 3
+6 network entries and 12 paths using 2064 bytes of memory
+BGP attribute entries [6/984], BGP AS path entries [6/48]
 BGP community entries [0/0], BGP clusterlist entries [0/0]
 
 Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
-10.2.2.1        4 65001    2977    2975        8    0    0 02:28:50 1
-10.2.2.3        4 65002    2974    2971        8    0    0 02:28:39 1
-10.2.2.5        4 65003    2967    2966        8    0    0 02:28:21 1
+10.2.2.1        4 65001   91030   85036    18952    0    0 02:02:08 2
+10.2.2.3        4 65002   91223   85219    18952    0    0 02:02:13 2
+10.2.2.5        4 65003   89393   85225    18952    0    0 02:01:56 4
+DC1-S2#
 DC1-S2# sh ip ro bgp
 IP Route Table for VRF "default"
 '*' denotes best ucast next-hop
@@ -487,23 +537,16 @@ IP Route Table for VRF "default"
 '%<string>' in via output denotes VRF <string>
 
 10.0.0.3/32, ubest/mbest: 1/0
-    *via 10.2.2.1, [20/0], 02:28:56, bgp-65000, external, tag 65001
+    *via 10.2.2.1, [20/0], 02:02:14, bgp-65000, external, tag 65001
 10.0.0.4/32, ubest/mbest: 1/0
-    *via 10.2.2.3, [20/0], 02:28:45, bgp-65000, external, tag 65002
+    *via 10.2.2.3, [20/0], 02:02:19, bgp-65000, external, tag 65002
 10.0.0.5/32, ubest/mbest: 1/0
-    *via 10.2.2.5, [20/0], 02:28:28, bgp-65000, external, tag 65003
-
-DC1-S2# ping 10.0.0.4
-PING 10.0.0.4 (10.0.0.4): 56 data bytes
-64 bytes from 10.0.0.4: icmp_seq=0 ttl=254 time=14.182 ms
-64 bytes from 10.0.0.4: icmp_seq=1 ttl=254 time=4.342 ms
-64 bytes from 10.0.0.4: icmp_seq=2 ttl=254 time=3.411 ms
-64 bytes from 10.0.0.4: icmp_seq=3 ttl=254 time=2.696 ms
-64 bytes from 10.0.0.4: icmp_seq=4 ttl=254 time=2.571 ms
-
---- 10.0.0.4 ping statistics ---
-5 packets transmitted, 5 packets received, 0.00% packet loss
-round-trip min/avg/max = 2.571/5.44/14.182 ms
-DC1-S2#
+    *via 10.2.2.5, [20/0], 02:02:02, bgp-65000, external, tag 65003
+10.1.0.3/32, ubest/mbest: 1/0
+    *via 10.2.2.1, [20/0], 02:02:14, bgp-65000, external, tag 65001
+10.1.0.4/32, ubest/mbest: 1/0
+    *via 10.2.2.3, [20/0], 02:02:19, bgp-65000, external, tag 65002
+10.1.0.5/32, ubest/mbest: 1/0
+    *via 10.2.2.5, [20/0], 02:02:02, bgp-65000, external, tag 65003
 
 ```
