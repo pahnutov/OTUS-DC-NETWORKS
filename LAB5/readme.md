@@ -20,7 +20,7 @@
 
 ## Выполнение домашней работы в EVE-NG
 
-В качестве underlay сети используется схема из ДЗ4. Underlay eBGP.<br>
+В качестве underlay сети используется схема из LAB4. Underlay eBGP.<br>
 Настройка SPINE не менялась.<br>
 Ниже приведены команды только для настройки Vlan и VxLan.
 
@@ -28,7 +28,6 @@
 
 <details>
 <summary>Конфигурация коммутатора <b>DC1-L1</b>: </summary>
-
 ```
 nv overlay evpn
 feature bgp
@@ -50,13 +49,11 @@ interface nve1
 interface Ethernet1/1
   description Server1
   switchport access vlan 10
-
 ```
 </details>
 
 <details>
 <summary>Конфигурация коммутатора <b>DC1-L2</b>: </summary>
-
 ```
 hostname DC1-L2
 nv overlay evpn
@@ -79,13 +76,11 @@ interface nve1
 interface Ethernet1/1
   description Server02
   switchport access vlan 20
-
 ```
 </details>
 
 <details>
 <summary>Конфигурация коммутатора <b>DC1-L3</b>: </summary>
-
 ```
 hostname DC1-L3
 
@@ -119,7 +114,6 @@ interface Ethernet1/1
 interface Ethernet1/2
   description Server4
   switchport access vlan 20
-
 ```
 </details>
 
@@ -188,12 +182,10 @@ Legend:
 *   20     500d.0000.1b08   static   -         F      F    Vlan20
 G    -     500d.0000.1b08   static   -         F      F    sup-eth1(R)
 G   20     500d.0000.1b08   static   -         F      F    sup-eth1(R)
-
 ```
 
 Проверка протокола VxLAN на коммутаторе <b>DC1-L3</b>:
 ```
-
 DC1-L3(config)# sh nve peer
 Interface Peer-IP                                 State LearnType Uptime   Router-Mac
 --------- --------------------------------------  ----- --------- -------- -----------------
@@ -230,7 +222,6 @@ Legend:
 G    -     500e.0000.1b08   static   -         F      F    sup-eth1(R)
 G   10     500e.0000.1b08   static   -         F      F    sup-eth1(R)
 G   20     500e.0000.1b08   static   -         F      F    sup-eth1(R)
-
 ```
 
 Проверка доступности хостов <b>Server1 < - > Server3</b>:
@@ -266,7 +257,6 @@ Protocol  Address          Age (min)  Hardware Addr   Type   Interface
 Internet  192.168.10.20          96   500e.0000.1b08  ARPA   Ethernet0/0
 Internet  192.168.10.100        114   aabb.cc00.2000  ARPA   Ethernet0/0
 Internet  192.168.10.200          -   aabb.cc00.3000  ARPA   Ethernet0/0
-
 ```
 
 Проверка доступности хостов <b>Server2 < - > Server4</b>:
@@ -300,7 +290,6 @@ Server4#sh arp
 Protocol  Address          Age (min)  Hardware Addr   Type   Interface
 Internet  192.168.20.10          59   aabb.cc00.5000  ARPA   Ethernet0/0
 Internet  192.168.20.20           -   aabb.cc00.4000  ARPA   Ethernet0/0
-
 ```
 
 ### Пример трассировки пакета 
