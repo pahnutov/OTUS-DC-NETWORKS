@@ -9,16 +9,17 @@ VxLAN EVPN L2
 
 ![bgp_vni.png](bgp_vni.png)
 
+<br>
 ## Схема взаимодействия в VXLAN фабрике.
 
 ![vxlan_l2.png](vxlan_l2.png)
 
+<br>
 ## Выполнение домашней работы в EVE-NG
 
-В качестве underlay сети используется схема из ДЗ4. Underlay eBGP.
-Настройка SPINE не менялась.
+В качестве underlay сети используется схема из ДЗ4. Underlay eBGP.<br>
+Настройка SPINE не менялась.<br>
 Ниже приведены команды только для настройки Vlan и VxLan.
-
 
 ### Настройка коммутаторов
 
@@ -116,7 +117,6 @@ interface Ethernet1/2
   description Server4
   switchport access vlan 20
 
-
 ```
 </details>
 
@@ -128,7 +128,6 @@ DC1-L1(config)# sh nve peer
 Interface Peer-IP                                 State LearnType Uptime   Router-Mac
 --------- --------------------------------------  ----- --------- -------- -----------------
 nve1      10.1.0.5                                Up    DP        14:42:07 n/a
-
 
 DC1-L1(config)# sh nve vni
 Codes: CP - Control Plane        DP - Data Plane
@@ -187,12 +186,10 @@ Legend:
 G    -     500d.0000.1b08   static   -         F      F    sup-eth1(R)
 G   20     500d.0000.1b08   static   -         F      F    sup-eth1(R)
 
-
 ```
 
 Проверка протокола VxLAN на коммутаторе <b>DC1-L3</b>:
 ```
-
 
 DC1-L3(config)# sh nve peer
 Interface Peer-IP                                 State LearnType Uptime   Router-Mac
@@ -245,7 +242,7 @@ Sending 5, 100-byte ICMP Echos to 192.168.10.200, timeout is 2 seconds:
 !!!!!
 Success rate is 100 percent (5/5), round-trip min/avg/max = 0/32/75 ms
 
-<b>Server1#</b>sh arp
+Server1#sh arp
 Protocol  Address          Age (min)  Hardware Addr   Type   Interface
 Internet  192.168.10.10          12   500c.0000.1b08  ARPA   Ethernet0/0
 Internet  192.168.10.100          -   aabb.cc00.2000  ARPA   Ethernet0/0
@@ -261,7 +258,7 @@ Sending 5, 100-byte ICMP Echos to 192.168.10.100, timeout is 2 seconds:
 !!!!!
 Success rate is 100 percent (5/5), round-trip min/avg/max = 9/19/55 ms
 
-<b>Server3#</b>sh arp
+Server3#sh arp
 Protocol  Address          Age (min)  Hardware Addr   Type   Interface
 Internet  192.168.10.20          96   500e.0000.1b08  ARPA   Ethernet0/0
 Internet  192.168.10.100        114   aabb.cc00.2000  ARPA   Ethernet0/0
