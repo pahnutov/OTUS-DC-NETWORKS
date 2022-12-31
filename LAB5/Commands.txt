@@ -1,0 +1,16 @@
+feature bgp
+feature interface-vlan
+feature vn-segment-vlan-based
+feature nv overlay
+
+nv overlay evpn
+
+cli  alias name cpy copy run start
+
+vlan 10
+  name Vlan10
+
+
+interface Ethernet1/1
+  description Server1
+  switchport access vlan 10
