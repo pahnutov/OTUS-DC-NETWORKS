@@ -1,20 +1,23 @@
 ## Домашнее задание
-VxLAN EVPN L2
+<b>VxLAN EVPN L2 </b>
 
 Цель:
 - Настроить BGP peering между VTEP в l2vpn evpn;
 - Проверить связность между клиентами.
+
+<br>
 
 ## Схема соединений, Underlay BGP, размещение клиентов в ЦОДе.
 
 ![bgp_vni.png](bgp_vni.png)
 
 <br>
+
 ## Схема взаимодействия в VXLAN фабрике.
 
 ![vxlan_l2.png](vxlan_l2.png)
 
-<br>
+
 ## Выполнение домашней работы в EVE-NG
 
 В качестве underlay сети используется схема из ДЗ4. Underlay eBGP.<br>
