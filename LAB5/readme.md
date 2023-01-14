@@ -398,9 +398,9 @@ evpn
 ```
 </details>
 
-### Проверка маршрутизации Overlay 
+### Проверка маршрутизации Overlay в AFI L2VPN EVPN
 
-Проверка протокола VxLAN на коммутаторе <b>DC1-S1</b>:
+Проверка протокола EVPN на коммутаторе <b>DC1-S1</b>:
 ```
 DC1-S1# sh bgp l2 e sum
 BGP summary information for VRF default, address family L2VPN EVPN
@@ -417,7 +417,7 @@ Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
 
 ```
 
-Проверка протокола VxLAN на коммутаторе <b>DC1-S1</b>:
+Проверка протокола EVPN на коммутаторе <b>DC1-S2</b>:
 ```
 DC1-S2# sh bgp l2 e sum
 BGP summary information for VRF default, address family L2VPN EVPN
