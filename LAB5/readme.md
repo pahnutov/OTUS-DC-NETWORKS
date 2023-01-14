@@ -434,8 +434,6 @@ Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
 
 ```
 
-
-
 ### Проверка связности по L2 
 
 Проверка протокола VxLAN на коммутаторе <b>DC1-L1</b>:
