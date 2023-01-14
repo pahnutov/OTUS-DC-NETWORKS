@@ -398,6 +398,44 @@ evpn
 ```
 </details>
 
+### Проверка маршрутизации Overlay 
+
+Проверка протокола VxLAN на коммутаторе <b>DC1-S1</b>:
+```
+DC1-S1# sh bgp l2 e sum
+BGP summary information for VRF default, address family L2VPN EVPN
+BGP router identifier 10.0.0.1, local AS number 65000
+BGP table version is 1307, L2VPN EVPN config peers 3, capable peers 3
+12 network entries and 12 paths using 2928 bytes of memory
+BGP attribute entries [8/1376], BGP AS path entries [3/18]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.0.0.3        4 65001     104     100     1307    0    0 01:25:22 3
+10.0.0.4        4 65002      87      87     1307    0    0 01:17:36 3
+10.0.0.5        4 65003     108      99     1307    0    0 01:32:20 6
+
+```
+
+Проверка протокола VxLAN на коммутаторе <b>DC1-S1</b>:
+```
+DC1-S2# sh bgp l2 e sum
+BGP summary information for VRF default, address family L2VPN EVPN
+BGP router identifier 10.0.0.2, local AS number 65000
+BGP table version is 19, L2VPN EVPN config peers 3, capable peers 3
+12 network entries and 12 paths using 2928 bytes of memory
+BGP attribute entries [8/1376], BGP AS path entries [3/18]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.0.0.3        4 65001      53      52       19    0    0 00:45:57 3
+10.0.0.4        4 65002      49      48       19    0    0 00:41:42 3
+10.0.0.5        4 65003      56      51       19    0    0 00:45:52 6
+
+```
+
+
+
 ### Проверка связности по L2 
 
 Проверка протокола VxLAN на коммутаторе <b>DC1-L1</b>:
