@@ -92,7 +92,7 @@ router bgp 65000
     timers 3 9
     address-family ipv4 unicast
 ```
-
+</details>
 
 <details>
 <summary>Конфигурация коммутатора <b>DC1-S1</b>: </summary>
@@ -159,6 +159,7 @@ router bgp 65000
     address-family ipv4 unicast
 
 ```
+</details>
 
 <details>
 <summary>Конфигурация коммутатора <b>DC1-L1</b>: </summary>
