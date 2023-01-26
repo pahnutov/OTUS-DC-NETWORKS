@@ -6,5 +6,7 @@
 - [ДЗ 4: Underlay. eBGP](LAB4/)
 - [ДЗ 5: VxLAN. EVPN L2](LAB5/)
 - [ДЗ 6: VxLAN. EVPN L3](LAB6/)
+- [ДЗ 7: VxLAN. VPC](LAB7/)
+- [ДЗ 8: VxLAN. Оптимизация](LAB8/)
 
 
