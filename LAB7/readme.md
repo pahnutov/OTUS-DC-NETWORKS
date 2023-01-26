@@ -25,27 +25,44 @@
 
 ### Настройка коммутаторов
 
-Ниже приведены команды Указаны команды, используемые только в рамках этой лабы. Остальные настройки - без изменений.
+Ниже приведены команды, используемые только в рамках этой лабы. Остальные настройки остаются без изменений.
 
 <details>
 <summary>Конфигурация коммутатора <b>DC1-L1</b>: </summary>
 
 ```
-nv overlay evpn
-feature bgp
-feature interface-vlan
-feature vn-segment-vlan-based
-feature nv overlay
+feature lacp
+feature vpc
 
 vlan 10
-  name Vlan10
+  name TEST
   vn-segment 10010
+vlan 20
+  name PROD
+  vn-segment 10020
 
-interface Vlan10
-  description TEST
-  no shutdown
-  ip address 192.168.10.1/24
-  fabric forwarding mode anycast-gateway
+vpc domain 12
+  peer-switch
+  role priority 10
+  peer-keepalive destination 172.16.1.1 source 172.16.1.0
+
+interface port-channel1
+  description to Server 1
+  switchport access vlan 10
+  spanning-tree port type edge
+  vpc 1
+
+interface port-channel2
+  description to Server2
+  switchport access vlan 20
+  spanning-tree port type edge
+  vpc 2
+
+interface port-channel100
+  description vPC peer link (E1/3, E1/4)
+  switchport mode trunk
+  spanning-tree port type network
+  vpc peer-link
 
 interface nve1
   no shutdown
@@ -53,155 +70,92 @@ interface nve1
   source-interface loopback1
   member vni 10010
     ingress-replication protocol bgp
-      
+  member vni 10020
+    ingress-replication protocol bgp
+
+interface Ethernet1/1
+  description to Server 1
+  switchport access vlan 10
+  channel-group 1
+
 interface Ethernet1/1
   description Server1
   switchport access vlan 10
   
-  router bgp 65001
-    router-id 10.0.0.3
-    bestpath as-path multipath-relax
-    reconnect-interval 12
-    address-family ipv4 unicast
-      redistribute direct route-map REDISTR-CONNECTED
-      maximum-paths 64
-    address-family l2vpn evpn
-      retain route-target all
-    template peer SPINE
-      remote-as 65000
-      password 7 1454372F2F572F2F27
-      timers 3 9
-      address-family ipv4 unicast
-    template peer SPINE-L2VPN
-      remote-as 65000
-      password 7 1454372F2F572F2F27
-      update-source loopback0
-      ebgp-multihop 2
-      address-family l2vpn evpn
-        send-community
-        send-community extended
-    neighbor 10.0.0.1
-      inherit peer SPINE-L2VPN
-    neighbor 10.0.0.2
-      inherit peer SPINE-L2VPN
-    neighbor 10.2.1.0
-      inherit peer SPINE
-      description peer to DC1-S1
-    neighbor 10.2.2.0
-      inherit peer SPINE
-      description peer to DC1-S2
-  evpn
-    vni 10010 l2
-      rd 65001:10
-      route-target import 10:10010
-      route-target export 10:10010
+  interface Ethernet1/2
+    description Server2
+    switchport access vlan 20
+    channel-group 2
+  
+  interface Ethernet1/3
+    description vPC peer link
+    switchport mode trunk
+    channel-group 100 mode active
+  
+  interface Ethernet1/4
+    description vPC peer link
+    switchport mode trunk
+    channel-group 100 mode active
 
+interface mgmt0
+  vrf member management
+  ip address 172.16.1.0/31
+  
+  interface loopback1
+    description VTEP
+    ip address 10.1.0.3/32
+    ip address 10.1.0.12/32 secondary
+
+evpn
+  vni 10010 l2
+    rd 65001:10
+    route-target import 10:10010
+    route-target export 10:10010
+  vni 10020 l2
+    rd 65001:20
+    route-target import 20:10020
+    route-target export 20:10020
+  
 ```
 </details>
 
 <details>
 <summary>Конфигурация коммутатора <b>DC1-L2</b>: </summary>
-
 ```
 hostname DC1-L2
-nv overlay evpn
-feature bgp
-feature interface-vlan
-feature vn-segment-vlan-based
-feature nv overlay
 
+feature lacp
+feature vpc
+
+vlan 10
+  name TEST
+  vn-segment 10010
 vlan 20
   name PROD
   vn-segment 10020
 
-interface Vlan20
-  description PROD
-  no shutdown
-  ip address 192.168.20.1/24
-  fabric forwarding mode anycast-gateway
+vpc domain 12
+  peer-switch
+  role priority 20
+  peer-keepalive destination 172.16.1.0 source 172.16.1.1
 
-interface nve1
-  no shutdown
-  host-reachability protocol bgp
-  source-interface loopback1
-  member vni 10020
-    ingress-replication protocol bgp
+interface port-channel1
+  description to Server 1
+  switchport access vlan 10
+  spanning-tree port type edge
+  vpc 1
 
-interface Ethernet1/1
-  description Server02
+interface port-channel2
+  description to Server2
   switchport access vlan 20
+  spanning-tree port type edge
+  vpc 2
 
-router bgp 65002
-  router-id 10.0.0.4
-  bestpath as-path multipath-relax
-  reconnect-interval 12
-  address-family ipv4 unicast
-    redistribute direct route-map REDISTR-CONNECTED
-    maximum-paths 64
-  address-family l2vpn evpn
-    retain route-target all
-  template peer SPINE
-    remote-as 65000
-    password 7 1454372F2F572F2F27
-    timers 3 9
-    address-family ipv4 unicast
-  template peer SPINE-L2VPN
-    remote-as 65000
-    password 7 1454372F2F572F2F27
-    update-source loopback0
-    ebgp-multihop 2
-    address-family l2vpn evpn
-      send-community
-      send-community extended
-  neighbor 10.0.0.1
-    inherit peer SPINE-L2VPN
-  neighbor 10.0.0.2
-    inherit peer SPINE-L2VPN
-  neighbor 10.2.1.2
-    inherit peer SPINE
-    description peer to DC1-S1
-  neighbor 10.2.2.2
-    inherit peer SPINE
-    description peer to DC1-S2
-evpn
-  vni 10020 l2
-    rd 65002:20
-    route-target import 20:10020
-    route-target export 20:10020
-
-```
-</details>
-
-<details>
-<summary>Конфигурация коммутатора <b>DC1-L3</b>: </summary>
-
-```
-hostname DC1-L3
-
-nv overlay evpn
-feature bgp
-feature interface-vlan
-feature vn-segment-vlan-based
-feature nv overlay
-
-vlan 10
-  name Vlan10
-  vn-segment 10010
-vlan 20
-  name Vlan20
-  vn-segment 10020
-
-interface Vlan10
-  description TEST
-  no shutdown
-  ip address 192.168.10.1/24
-  fabric forwarding mode anycast-gateway
-
-interface Vlan20
-  description PROD
-  no shutdown
-  ip address 192.168.20.1/24
-  fabric forwarding mode anycast-gateway
+interface port-channel100
+  description vPC peer link (E1/3, E1/4)
+  switchport mode trunk
+  spanning-tree port type network
+  vpc peer-link
 
 interface nve1
   no shutdown
@@ -213,58 +167,110 @@ interface nve1
     ingress-replication protocol bgp
 
 interface Ethernet1/1
-  description Server3
+  description to Server 1
   switchport access vlan 10
+  channel-group 1
 
-interface Ethernet1/2
-  description Server4
-  switchport access vlan 20
+interface Ethernet1/1
+  description Server1
+  switchport access vlan 10
+  
+  interface Ethernet1/2
+    description Server2
+    switchport access vlan 20
+    channel-group 2
+  
+  interface Ethernet1/3
+    description vPC peer link
+    switchport mode trunk
+    channel-group 100 mode active
+  
+  interface Ethernet1/4
+    description vPC peer link
+    switchport mode trunk
+    channel-group 100 mode active
 
-router bgp 65003
-  router-id 10.0.0.5
-  bestpath as-path multipath-relax
-  reconnect-interval 12
-  address-family ipv4 unicast
-    redistribute direct route-map REDISTR-CONNECTED
-    maximum-paths 64
-  address-family l2vpn evpn
-    retain route-target all
-  template peer SPINE
-    remote-as 65000
-    password 7 1454372F2F572F2F27
-    timers 3 9
-    address-family ipv4 unicast
-  template peer SPINE-L2VPN
-    remote-as 65000
-    password 7 1454372F2F572F2F27
-    update-source loopback0
-    ebgp-multihop 2
-    address-family l2vpn evpn
-      send-community
-      send-community extended
-  neighbor 10.0.0.1
-    inherit peer SPINE-L2VPN
-  neighbor 10.0.0.2
-    inherit peer SPINE-L2VPN
-  neighbor 10.2.1.4
-    inherit peer SPINE
-    description peer to DC1-S1
-  neighbor 10.2.2.4
-    inherit peer SPINE
-    description peer to DC1-S2
+interface mgmt0
+  vrf member management
+  ip address 172.16.1.1/31
+  
+  interface loopback1
+    description VTEP
+    ip address 10.1.0.4/32
+    ip address 10.1.0.12/32 secondary
+
 evpn
   vni 10010 l2
-    rd 65003:10
+    rd 65001:10
     route-target import 10:10010
     route-target export 10:10010
   vni 10020 l2
-    rd 65003:20
+    rd 65001:20
     route-target import 20:10020
     route-target export 20:10020
+
 ```
 </details>
 
-### Проверка маршрутизации Overlay в AFI L2VPN EVPN
+<details>
+<summary>Конфигурация сервера <b>Server1</b>: </summary>
+
+```
+hostname Server1
+
+interface Port-channel1
+ description to LEAF1,2
+ switchport access vlan 10
+ switchport mode access
+
+interface Ethernet0/0
+ description to LEAF-1,2
+ switchport access vlan 10
+ switchport mode access
+ channel-group 1 mode on
+
+interface Ethernet0/1
+ description to LEAF-1,2
+ switchport access vlan 10
+ switchport mode access
+ channel-group 1 mode on
+
+interface Vlan10
+ ip address 192.168.10.100 255.255.255.0
+!
+```
+</details>
+
+<details>
+<summary>Конфигурация сервера <b>Server2</b>: </summary>
+
+```
+hostname Server2
+
+interface Port-channel1
+ description to LEAF1,2
+ switchport access vlan 20
+ switchport mode access
+
+interface Ethernet0/0
+ description to LEAF-1,2
+ switchport access vlan 20
+ switchport mode access
+ channel-group 1 mode on
+
+interface Ethernet0/1
+ description to LEAF-1,2
+ switchport access vlan 20
+ switchport mode access
+ channel-group 1 mode on
+
+interface Vlan20
+ ip address 192.168.20.10 255.255.255.0
+
+```
+</details>
+
+### Проверка прохождения трафика через vPC пару.
 
 Проверка протокола EVPN на коммутаторе <b>DC1-S1</b>:
 ```
