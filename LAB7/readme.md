@@ -121,6 +121,7 @@ evpn
 
 <details>
 <summary>Конфигурация коммутатора <b>DC1-L2</b>: </summary>
+
 ```
 hostname DC1-L2
 
@@ -213,7 +214,7 @@ evpn
 </details>
 
 <details>
-<summary>Конфигурация сервера <b>Server1</b>: </summary>
+<summary>Конфигурация сервера <b>Server1</b> </summary>
 
 ```
 hostname Server1
