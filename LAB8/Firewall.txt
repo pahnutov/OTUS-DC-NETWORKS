@@ -1,0 +1,116 @@
+
+Firewall>en
+Firewall#ter le 0
+Firewall#ter wi 0
+Firewall#sh run
+Building configuration...
+
+Current configuration : 1368 bytes
+!
+! Last configuration change at 08:35:47 EET Mon Jan 30 2023
+!
+version 15.2
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+service compress-config
+!
+hostname Firewall
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+clock timezone EET 2 0
+!
+!
+!
+!
+!
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+vlan internal allocation policy ascending
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ description RID
+ ip address 10.0.0.10 255.255.255.255
+!
+interface Loopback1
+ description Internet
+ ip address 8.8.8.8 255.255.255.255
+!
+interface Ethernet0/0
+ no switchport
+ no ip address
+!
+interface Ethernet0/0.10
+ encapsulation dot1Q 10
+ ip address 10.2.3.0 255.255.255.254
+!
+interface Ethernet0/0.20
+ encapsulation dot1Q 20
+ ip address 10.2.3.2 255.255.255.254
+!
+interface Ethernet0/1
+!
+interface Ethernet0/2
+!
+interface Ethernet0/3
+!
+router bgp 65010
+ bgp log-neighbor-changes
+ neighbor 10.2.3.1 remote-as 4260036618
+ neighbor 10.2.3.3 remote-as 4260036628
+ !
+ address-family ipv4
+  network 8.8.8.8 mask 255.255.255.255
+  neighbor 10.2.3.1 activate
+  neighbor 10.2.3.3 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+control-plane
+!
+!
+line con 0
+ logging synchronous
+line aux 0
+line vty 0 4
+!
+!
+end
+
+Firewall#
