@@ -1,8 +1,8 @@
 ## Домашнее задание
-<b>VxLAN VPC </b>
+<b>VxLAN. Оптимзация.</b>
 
 Цель:
-- Сконфигурировать 2 vlan в отдельных VRF TEST b PROD;
+- Сконфигурировать 2 vlan в отдельных VRF TEST и PROD;
 - Сконфигурировать Border LEAF;
 - Сконфигурировать Firewall с функциями маршрутизации и Loopback1 для имитации Internet;
 - Проверить доступ для серверов в Интернет и досткпность между серверами в разых VRF через Firewall.
@@ -15,7 +15,7 @@
 
 ![connection.png](connection.png)
 
-## Логическая схема настройки vPC пары.
+## Логическая схема настройки стенда.
 
 ![bgpscheme.png](bgpscheme.png)
 
@@ -296,7 +296,6 @@ router bgp 65003
   vrf prod
     address-family ipv4 unicast
       aggregate-address 192.168.20.0/24 summary-only
-      aggregate-address 192.168.20.0/25 summary-only
     neighbor 10.2.3.2
       remote-as 65010
       local-as 4260036628 no-prepend replace-as
@@ -357,209 +356,201 @@ router bgp 65010
 </details>
 
 
-<details>
-<summary>Конфигурация сервера <b>Server2</b>: </summary>
+### Проверка маршрутизации. 
+Смотрим на коммутаторах таблицу маршрутиазации. Анонсы evpn. Источники mac адресов.
 
+Проверка evpn на коммутаторе <b>DC1-L1</b>:
 ```
 
+DC1-L1(config)# sh ip ro vrf test
+IP Route Table for VRF "test"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
 
-```
-</details>
+8.8.8.8/32, ubest/mbest: 1/0
+    *via 10.1.0.5%default, [20/0], 02:07:32, bgp-65001, external, tag 65000, segid: 10111 tunnelid: 0xa010005 encap: VXLAN
 
-### Проверка настройки vPC. 
-Смотрим на обоих коммутаторах состояние vPC домена, агрегацию каналов (Po) и происхождение MAC адресов.
+192.168.10.0/24, ubest/mbest: 1/0, attached
+    *via 192.168.10.1, Vlan10, [0/0], 15:46:03, direct
+192.168.10.1/32, ubest/mbest: 1/0, attached
+    *via 192.168.10.1, Vlan10, [0/0], 15:46:03, local
+192.168.10.100/32, ubest/mbest: 1/0, attached
+    *via 192.168.10.100, Vlan10, [190/0], 14:50:17, hmm
+192.168.10.200/32, ubest/mbest: 1/0
+    *via 10.1.0.4%default, [20/0], 14:46:04, bgp-65001, external, tag 65000, segid: 10111 tunnelid: 0xa010004 encap: VXLAN
 
-Проверка vPC на коммутаторе <b>DC1-L1</b>:
-```
-DC1-L1# sh vpc br
-Legend:
-                (*) - local vPC is down, forwarding via vPC peer-link
+192.168.20.0/24, ubest/mbest: 1/0
+    *via 10.1.0.5%default, [20/0], 02:03:12, bgp-65001, external, tag 65000, segid: 10111 tunnelid: 0xa010005 encap: VXLAN
 
-vPC domain id                     : 12
-Peer status                       : peer adjacency formed ok
-vPC keep-alive status             : peer is alive
-Configuration consistency status  : success
-Per-vlan consistency status       : success
-Type-2 consistency status         : success
-vPC role                          : primary
-Number of vPCs configured         : 2
-Peer Gateway                      : Disabled
-Dual-active excluded VLANs        : -
-Graceful Consistency Check        : Enabled
-Auto-recovery status              : Disabled
-Delay-restore status              : Timer is off.(timeout = 30s)
-Delay-restore SVI status          : Timer is off.(timeout = 10s)
-Operational Layer3 Peer-router    : Disabled
-Virtual-peerlink mode             : Disabled
+DC1-L1(config)# sh ip ro vrf prod
+IP Route Table for VRF "prod"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
 
-vPC Peer-link status
----------------------------------------------------------------------
-id    Port   Status Active vlans
---    ----   ------ -------------------------------------------------
-1     Po100  up     1,10,20
+8.8.8.8/32, ubest/mbest: 1/0
+    *via 10.1.0.5%default, [20/0], 02:07:54, bgp-65001, external, tag 65000, segid: 10222 tunnelid: 0xa010005 encap: VXLAN
 
-vPC status
-----------------------------------------------------------------------------
-Id    Port          Status Consistency Reason                Active vlans
---    ------------  ------ ----------- ------                ---------------
-1     Po1           up     success     success               10
+192.168.10.0/24, ubest/mbest: 1/0
+    *via 10.1.0.5%default, [20/0], 02:23:28, bgp-65001, external, tag 65000, segid: 10222 tunnelid: 0xa010005 encap: VXLAN
 
-2     Po2           up     success     success               20
+192.168.20.0/24, ubest/mbest: 1/0, attached
+    *via 192.168.20.1, Vlan20, [0/0], 15:46:09, direct
+192.168.20.1/32, ubest/mbest: 1/0, attached
+    *via 192.168.20.1, Vlan20, [0/0], 15:46:09, local
+192.168.20.10/32, ubest/mbest: 1/0, attached
+    *via 192.168.20.10, Vlan20, [190/0], 14:47:48, hmm
+192.168.20.20/32, ubest/mbest: 1/0
+    *via 10.1.0.4%default, [20/0], 14:44:52, bgp-65001, external, tag 65000, segid: 10222 tunnelid: 0xa010004 encap: VXLAN
 
-DC1-L1# sh port-channel sum
-Flags:  D - Down        P - Up in port-channel (members)
-        I - Individual  H - Hot-standby (LACP only)
-        s - Suspended   r - Module-removed
-        b - BFD Session Wait
-        S - Switched    R - Routed
-        U - Up (port-channel)
-        p - Up in delay-lacp mode (member)
-        M - Not in use. Min-links not met
---------------------------------------------------------------------------------
-Group Port-       Type     Protocol  Member Ports
-      Channel
---------------------------------------------------------------------------------
-1     Po1(SU)     Eth      NONE      Eth1/1(P)
-2     Po2(SU)     Eth      NONE      Eth1/2(P)
-100   Po100(SU)   Eth      LACP      Eth1/3(P)    Eth1/4(P)
+DC1-L1(config)# sh bgp l2 e vni-id 10111
+BGP routing table information for VRF default, address family L2VPN EVPN
+BGP table version is 153, Local Router ID is 10.0.0.3
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
 
-DC1-L1# sh mac addr
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 65001:111    (L3VNI 10111)
+*>e[2]:[0]:[0]:[48]:[aabb.cc00.3000]:[32]:[192.168.10.200]/272
+                      10.1.0.4                                       0 65000 65002 i
+*>e[5]:[0]:[0]:[24]:[192.168.10.0]/224
+                      10.1.0.5                                       0 65000 65003 i
+*>e[5]:[0]:[0]:[24]:[192.168.20.0]/224
+                      10.1.0.5                                       0 65000 65003 65010 4260036628 i
+*>e[5]:[0]:[0]:[32]:[8.8.8.8]/224
+                      10.1.0.5                                       0 65000 65003 65010 i
+
+DC1-L1(config)# sh bgp l2 e vni-id 10222
+BGP routing table information for VRF default, address family L2VPN EVPN
+BGP table version is 153, Local Router ID is 10.0.0.3
+Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
+Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
+Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
+
+   Network            Next Hop            Metric     LocPrf     Weight Path
+Route Distinguisher: 65001:222    (L3VNI 10222)
+*>e[2]:[0]:[0]:[48]:[aabb.cc00.4000]:[32]:[192.168.20.20]/272
+                      10.1.0.4                                       0 65000 65002 i
+*>e[5]:[0]:[0]:[24]:[192.168.10.0]/224
+                      10.1.0.5                                       0 65000 65003 65010 4260036618 i
+*>e[5]:[0]:[0]:[24]:[192.168.20.0]/224
+                      10.1.0.5                                       0 65000 65003 i
+*>e[5]:[0]:[0]:[32]:[8.8.8.8]/224
+                      10.1.0.5                                       0 65000 65003 65010 i
+
+DC1-L1(config)# sh mac addr
 Legend:
         * - primary entry, G - Gateway MAC, (R) - Routed MAC, O - Overlay MAC
         age - seconds since last seen,+ - primary entry using vPC Peer-Link,
         (T) - True, (F) - False, C - ControlPlane MAC, ~ - vsan
    VLAN     MAC Address      Type      age     Secure NTFY Ports
 ---------+-----------------+--------+---------+------+----+------------------
-C   10     aabb.cc00.3000   dynamic  0         F      F    nve1(10.1.0.5)
-*   10     aabb.cc80.2000   dynamic  0         F      F    Po1
-C   20     aabb.cc00.4000   dynamic  0         F      F    nve1(10.1.0.5)
-*   20     aabb.cc80.5000   dynamic  0         F      F    Po2
+*   10     aabb.cc00.2000   dynamic  0         F      F    Eth1/1
+*   20     aabb.cc00.5000   dynamic  0         F      F    Eth1/2
+*  111     500c.0000.1b08   static   -         F      F    Vlan111
+*  111     500d.0000.1b08   static   -         F      F    nve1(10.1.0.4)
+*  111     500e.0000.1b08   static   -         F      F    nve1(10.1.0.5)
+*  222     500c.0000.1b08   static   -         F      F    Vlan222
+*  222     500d.0000.1b08   static   -         F      F    nve1(10.1.0.4)
+*  222     500e.0000.1b08   static   -         F      F    nve1(10.1.0.5)
 G    -     1234.1234.1234   static   -         F      F    sup-eth1(R)
 G    -     500c.0000.1b08   static   -         F      F    sup-eth1(R)
-
-
-```
-
-Проверка vPC на коммутаторе <b>DC1-L2 </b>:
-```
-
-DC1-L2# sh vpc br
-Legend:
-                (*) - local vPC is down, forwarding via vPC peer-link
-
-vPC domain id                     : 12
-Peer status                       : peer adjacency formed ok
-vPC keep-alive status             : peer is alive
-Configuration consistency status  : success
-Per-vlan consistency status       : success
-Type-2 consistency status         : success
-vPC role                          : secondary
-Number of vPCs configured         : 2
-Peer Gateway                      : Disabled
-Dual-active excluded VLANs        : -
-Graceful Consistency Check        : Enabled
-Auto-recovery status              : Disabled
-Delay-restore status              : Timer is off.(timeout = 30s)
-Delay-restore SVI status          : Timer is off.(timeout = 10s)
-Operational Layer3 Peer-router    : Disabled
-Virtual-peerlink mode             : Disabled
-
-vPC Peer-link status
----------------------------------------------------------------------
-id    Port   Status Active vlans
---    ----   ------ -------------------------------------------------
-1     Po100  up     1,10,20
-
-vPC status
-----------------------------------------------------------------------------
-Id    Port          Status Consistency Reason                Active vlans
---    ------------  ------ ----------- ------                ---------------
-1     Po1           up     success     success               10
-
-2     Po2           up     success     success               20
-
-DC1-L2# sh port-channel sum
-Flags:  D - Down        P - Up in port-channel (members)
-        I - Individual  H - Hot-standby (LACP only)
-        s - Suspended   r - Module-removed
-        b - BFD Session Wait
-        S - Switched    R - Routed
-        U - Up (port-channel)
-        p - Up in delay-lacp mode (member)
-        M - Not in use. Min-links not met
---------------------------------------------------------------------------------
-Group Port-       Type     Protocol  Member Ports
-      Channel
---------------------------------------------------------------------------------
-1     Po1(SU)     Eth      NONE      Eth1/1(P)
-2     Po2(SU)     Eth      NONE      Eth1/2(P)
-100   Po100(SU)   Eth      LACP      Eth1/3(P)    Eth1/4(P)
-
-DC1-L2# sh mac addr
-Legend:
-        * - primary entry, G - Gateway MAC, (R) - Routed MAC, O - Overlay MAC
-        age - seconds since last seen,+ - primary entry using vPC Peer-Link,
-        (T) - True, (F) - False, C - ControlPlane MAC, ~ - vsan
-   VLAN     MAC Address      Type      age     Secure NTFY Ports
----------+-----------------+--------+---------+------+----+------------------
-C   10     aabb.cc00.3000   dynamic  0         F      F    nve1(10.1.0.5)
-+   10     aabb.cc80.2000   dynamic  0         F      F    Po1
-C   20     aabb.cc00.4000   dynamic  0         F      F    nve1(10.1.0.5)
-+   20     aabb.cc80.5000   dynamic  0         F      F    Po2
-G    -     1234.1234.1234   static   -         F      F    sup-eth1(R)
-G    -     500d.0000.1b08   static   -         F      F    sup-eth1(R)
+G   10     500c.0000.1b08   static   -         F      F    sup-eth1(R)
+G   20     500c.0000.1b08   static   -         F      F    sup-eth1(R)
+G  111     500c.0000.1b08   static   -         F      F    sup-eth1(R)
+G  222     500c.0000.1b08   static   -         F      F    sup-eth1(R)
 
 ```
 
-### Проверка информации от nve пиров по VxLAN на LEAF DC1-L3
-
-Проверка информации от nve пиров на коммутаторе <b>DC1-L3</b>:
+Проверка evpn на коммутаторе <b>DC1-L2 </b>:
 ```
-DC1-L3# sh bgp l2 e vni-id 10010
+DC1-L2# sh ip ro vrf test
+IP Route Table for VRF "test"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+8.8.8.8/32, ubest/mbest: 1/0
+    *via 10.1.0.5%default, [20/0], 02:09:17, bgp-65002, external, tag 65000, segid: 10111 tunnelid: 0xa010005 encap: VXLAN
+
+192.168.10.0/24, ubest/mbest: 1/0, attached
+    *via 192.168.10.1, Vlan10, [0/0], 15:46:59, direct
+192.168.10.1/32, ubest/mbest: 1/0, attached
+    *via 192.168.10.1, Vlan10, [0/0], 15:46:59, local
+192.168.10.100/32, ubest/mbest: 1/0
+    *via 10.1.0.3%default, [20/0], 14:52:02, bgp-65002, external, tag 65000, segid: 10111 tunnelid: 0xa010003 encap: VXLAN
+
+192.168.10.200/32, ubest/mbest: 1/0, attached
+    *via 192.168.10.200, Vlan10, [190/0], 14:47:49, hmm
+192.168.20.0/24, ubest/mbest: 1/0
+    *via 10.1.0.5%default, [20/0], 02:04:57, bgp-65002, external, tag 65000, segid: 10111 tunnelid: 0xa010005 encap: VXLAN
+
+
+DC1-L2# sh ip ro vrf prod
+IP Route Table for VRF "prod"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+8.8.8.8/32, ubest/mbest: 1/0
+    *via 10.1.0.5%default, [20/0], 02:09:31, bgp-65002, external, tag 65000, segid: 10222 tunnelid: 0xa010005 encap: VXLAN
+
+192.168.10.0/24, ubest/mbest: 1/0
+    *via 10.1.0.5%default, [20/0], 02:25:05, bgp-65002, external, tag 65000, segid: 10222 tunnelid: 0xa010005 encap: VXLAN
+
+192.168.20.0/24, ubest/mbest: 1/0, attached
+    *via 192.168.20.1, Vlan20, [0/0], 16:04:08, direct
+192.168.20.1/32, ubest/mbest: 1/0, attached
+    *via 192.168.20.1, Vlan20, [0/0], 16:04:08, local
+192.168.20.10/32, ubest/mbest: 1/0
+    *via 10.1.0.3%default, [20/0], 14:49:26, bgp-65002, external, tag 65000, segid: 10222 tunnelid: 0xa010003 encap: VXLAN
+
+192.168.20.20/32, ubest/mbest: 1/0, attached
+    *via 192.168.20.20, Vlan20, [190/0], 14:46:30, hmm
+
+DC1-L2# sh bgp l2 e vni-id 10111
 BGP routing table information for VRF default, address family L2VPN EVPN
-BGP table version is 101, Local Router ID is 10.0.0.5
+BGP table version is 153, Local Router ID is 10.0.0.4
 Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
 Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
 Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
 
    Network            Next Hop            Metric     LocPrf     Weight Path
-Route Distinguisher: 65003:10    (L2VNI 10010)
-*>l[2]:[0]:[0]:[48]:[aabb.cc00.3000]:[0]:[0.0.0.0]/216
-                      10.1.0.5                          100      32768 i
-* e[2]:[0]:[0]:[48]:[aabb.cc80.2000]:[0]:[0.0.0.0]/216
-                      10.1.0.12                                      0 65000 65002 i
-*>e                   10.1.0.12                                      0 65000 65001 i
-*>l[2]:[0]:[0]:[48]:[aabb.cc00.3000]:[32]:[192.168.10.200]/248
-                      10.1.0.5                          100      32768 i
-*>l[3]:[0]:[32]:[10.1.0.5]/88
-                      10.1.0.5                          100      32768 i
-* e[3]:[0]:[32]:[10.1.0.12]/88
-                      10.1.0.12                                      0 65000 65002 i
-*>e                   10.1.0.12                                      0 65000 65001 i
+Route Distinguisher: 65002:111    (L3VNI 10111)
+*>e[2]:[0]:[0]:[48]:[aabb.cc00.2000]:[32]:[192.168.10.100]/272
+                      10.1.0.3                                       0 65000 65001 i
+*>e[5]:[0]:[0]:[24]:[192.168.10.0]/224
+                      10.1.0.5                                       0 65000 65003 i
+*>e[5]:[0]:[0]:[24]:[192.168.20.0]/224
+                      10.1.0.5                                       0 65000 65003 65010 4260036628 i
+*>e[5]:[0]:[0]:[32]:[8.8.8.8]/224
+                      10.1.0.5                                       0 65000 65003 65010 i
 
-DC1-L3# sh bgp l2 e vni-id 10020
+DC1-L2# sh bgp l2 e vni-id 10222
 BGP routing table information for VRF default, address family L2VPN EVPN
-BGP table version is 101, Local Router ID is 10.0.0.5
+BGP table version is 153, Local Router ID is 10.0.0.4
 Status: s-suppressed, x-deleted, S-stale, d-dampened, h-history, *-valid, >-best
 Path type: i-internal, e-external, c-confed, l-local, a-aggregate, r-redist, I-injected
 Origin codes: i - IGP, e - EGP, ? - incomplete, | - multipath, & - backup, 2 - best2
 
    Network            Next Hop            Metric     LocPrf     Weight Path
-Route Distinguisher: 65003:20    (L2VNI 10020)
-*>l[2]:[0]:[0]:[48]:[aabb.cc00.4000]:[0]:[0.0.0.0]/216
-                      10.1.0.5                          100      32768 i
-* e[2]:[0]:[0]:[48]:[aabb.cc80.5000]:[0]:[0.0.0.0]/216
-                      10.1.0.12                                      0 65000 65002 i
-*>e                   10.1.0.12                                      0 65000 65001 i
-*>l[2]:[0]:[0]:[48]:[aabb.cc00.4000]:[32]:[192.168.20.20]/248
-                      10.1.0.5                          100      32768 i
-*>l[3]:[0]:[32]:[10.1.0.5]/88
-                      10.1.0.5                          100      32768 i
-* e[3]:[0]:[32]:[10.1.0.12]/88
-                      10.1.0.12                                      0 65000 65001 i
-*>e                   10.1.0.12                                      0 65000 65002 i
+Route Distinguisher: 65002:222    (L3VNI 10222)
+*>e[2]:[0]:[0]:[48]:[aabb.cc00.5000]:[32]:[192.168.20.10]/272
+                      10.1.0.3                                       0 65000 65001 i
+*>e[5]:[0]:[0]:[24]:[192.168.10.0]/224
+                      10.1.0.5                                       0 65000 65003 65010 4260036618 i
+*>e[5]:[0]:[0]:[24]:[192.168.20.0]/224
+                      10.1.0.5                                       0 65000 65003 i
+*>e[5]:[0]:[0]:[32]:[8.8.8.8]/224
+                      10.1.0.5                                       0 65000 65003 65010 i
 
-DC1-L3# sh mac addr
+DC1-L2# sh mac address-table
 Legend:
         * - primary entry, G - Gateway MAC, (R) - Routed MAC, O - Overlay MAC
         age - seconds since last seen,+ - primary entry using vPC Peer-Link,
@@ -567,77 +558,224 @@ Legend:
    VLAN     MAC Address      Type      age     Secure NTFY Ports
 ---------+-----------------+--------+---------+------+----+------------------
 *   10     aabb.cc00.3000   dynamic  0         F      F    Eth1/1
-C   10     aabb.cc80.2000   dynamic  0         F      F    nve1(10.1.0.12)
 *   20     aabb.cc00.4000   dynamic  0         F      F    Eth1/2
-C   20     aabb.cc80.5000   dynamic  0         F      F    nve1(10.1.0.12)
+*  111     500c.0000.1b08   static   -         F      F    nve1(10.1.0.3)
+*  111     500d.0000.1b08   static   -         F      F    Vlan111
+*  111     500e.0000.1b08   static   -         F      F    nve1(10.1.0.5)
+*  222     500c.0000.1b08   static   -         F      F    nve1(10.1.0.3)
+*  222     500d.0000.1b08   static   -         F      F    Vlan222
+*  222     500e.0000.1b08   static   -         F      F    nve1(10.1.0.5)
 G    -     1234.1234.1234   static   -         F      F    sup-eth1(R)
-G    -     500e.0000.1b08   static   -         F      F    sup-eth1(R)
-G   10     500e.0000.1b08   static   -         F      F    sup-eth1(R)
-G   20     500e.0000.1b08   static   -         F      F    sup-eth1(R)
+G    -     500d.0000.1b08   static   -         F      F    sup-eth1(R)
+G   10     500d.0000.1b08   static   -         F      F    sup-eth1(R)
+G   20     500d.0000.1b08   static   -         F      F    sup-eth1(R)
+G  111     500d.0000.1b08   static   -         F      F    sup-eth1(R)
+G  222     500d.0000.1b08   static   -         F      F    sup-eth1(R)
 
 ```
 
-Проверка доступности хостов <b>Server1 < - > Server3</b>:
+### Проверка пиринга с Firewall, проверка evpn, проверка маршрутизации
+
+Проверка на коммутаторе Border LEAF <b>DC1-L3</b>:
+
 ```
-Server1#sh ip  int br
+
+DC1-L3(config)# sh ip bgp sum vrf prod
+BGP summary information for VRF prod, address family IPv4 Unicast
+BGP router identifier 10.2.3.3, local AS number 65003
+BGP table version is 16, IPv4 Unicast config peers 1, capable peers 1
+5 network entries and 5 paths using 980 bytes of memory
+BGP attribute entries [5/860], BGP AS path entries [4/36]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.2.3.2        4 65010     172     154       16    0    0 02:29:09 2
+DC1-L3(config)# sh ip bgp sum vrf test
+BGP summary information for VRF test, address family IPv4 Unicast
+BGP router identifier 10.2.3.1, local AS number 65003
+BGP table version is 15, IPv4 Unicast config peers 1, capable peers 1
+5 network entries and 5 paths using 980 bytes of memory
+BGP attribute entries [5/860], BGP AS path entries [4/36]
+BGP community entries [0/0], BGP clusterlist entries [0/0]
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.2.3.0        4 65010     170     152       15    0    0 02:28:14 2
+
+DC1-L3(config)# sh ip ro vrf prod
+IP Route Table for VRF "prod"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+8.8.8.8/32, ubest/mbest: 1/0
+    *via 10.2.3.2, [20/0], 02:13:57, bgp-65003, external, tag 65010
+10.2.3.2/31, ubest/mbest: 1/0, attached
+    *via 10.2.3.3, Eth1/1.20, [0/0], 02:30:32, direct
+10.2.3.3/32, ubest/mbest: 1/0, attached
+    *via 10.2.3.3, Eth1/1.20, [0/0], 02:30:32, local
+192.168.10.0/24, ubest/mbest: 1/0
+    *via 10.2.3.2, [20/0], 02:29:31, bgp-65003, external, tag 65010
+192.168.20.0/24, ubest/mbest: 1/0
+    *via Null0, [220/0], 02:09:37, bgp-65003, discard, tag 65003
+192.168.20.10/32, ubest/mbest: 1/0
+    *via 10.1.0.3%default, [20/0], 03:07:53, bgp-65003, external, tag 65000, seg
+id: 10222 tunnelid: 0xa010003 encap: VXLAN
+
+192.168.20.20/32, ubest/mbest: 1/0
+    *via 10.1.0.4%default, [20/0], 03:07:53, bgp-65003, external, tag 65000, seg
+id: 10222 tunnelid: 0xa010004 encap: VXLAN
+
+
+DC1-L3(config)# sh ip ro vrf test
+IP Route Table for VRF "test"
+'*' denotes best ucast next-hop
+'**' denotes best mcast next-hop
+'[x/y]' denotes [preference/metric]
+'%<string>' in via output denotes VRF <string>
+
+8.8.8.8/32, ubest/mbest: 1/0
+    *via 10.2.3.0, [20/0], 02:14:10, bgp-65003, external, tag 65010
+10.2.3.0/31, ubest/mbest: 1/0, attached
+    *via 10.2.3.1, Eth1/1.10, [0/0], 02:29:51, direct
+10.2.3.1/32, ubest/mbest: 1/0, attached
+    *via 10.2.3.1, Eth1/1.10, [0/0], 02:29:51, local
+192.168.10.0/24, ubest/mbest: 1/0
+    *via Null0, [220/0], 02:56:20, bgp-65003, discard, tag 65003
+192.168.10.100/32, ubest/mbest: 1/0
+    *via 10.1.0.3%default, [20/0], 03:08:06, bgp-65003, external, tag 65000, seg
+id: 10111 tunnelid: 0xa010003 encap: VXLAN
+
+192.168.10.200/32, ubest/mbest: 1/0
+    *via 10.1.0.4%default, [20/0], 03:08:06, bgp-65003, external, tag 65000, seg
+id: 10111 tunnelid: 0xa010004 encap: VXLAN
+
+192.168.20.0/24, ubest/mbest: 1/0
+    *via 10.2.3.0, [20/0], 02:09:50, bgp-65003, external, tag 65010
+
+```
+
+
+Проверка пиринга и маршрутов на <b>Firewall</b>:
+```
+Firewall#sh ip bgp sum
+BGP router identifier 10.0.0.10, local AS number 65010
+BGP table version is 6, main routing table version 6
+3 network entries using 432 bytes of memory
+3 path entries using 240 bytes of memory
+3/3 BGP path/bestpath attribute entries using 456 bytes of memory
+2 BGP AS-PATH entries using 48 bytes of memory
+0 BGP route-map cache entries using 0 bytes of memory
+0 BGP filter-list cache entries using 0 bytes of memory
+BGP using 1176 total bytes of memory
+BGP activity 4/1 prefixes, 4/1 paths, scan interval 60 secs
+
+Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.2.3.1        4   4260036618     156     174        6    0    0 02:31:24        1
+10.2.3.3        4   4260036628     159     175        6    0    0 02:32:23        1
+Firewall#
+
+Firewall#sh ip ro
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override
+
+Gateway of last resort is not set
+
+      8.0.0.0/32 is subnetted, 1 subnets
+C        8.8.8.8 is directly connected, Loopback1
+      10.0.0.0/8 is variably subnetted, 5 subnets, 2 masks
+C        10.0.0.10/32 is directly connected, Loopback0
+C        10.2.3.0/31 is directly connected, Ethernet0/0.10
+L        10.2.3.0/32 is directly connected, Ethernet0/0.10
+C        10.2.3.2/31 is directly connected, Ethernet0/0.20
+L        10.2.3.2/32 is directly connected, Ethernet0/0.20
+B     192.168.10.0/24 [20/0] via 10.2.3.1, 02:31:59
+B     192.168.20.0/24 [20/0] via 10.2.3.3, 02:12:05
+
+Firewall#sh ip int br
 Interface              IP-Address      OK? Method Status                Protocol
 Ethernet0/0            unassigned      YES unset  up                    up
+Ethernet0/0.10         10.2.3.0        YES manual up                    up
+Ethernet0/0.20         10.2.3.2        YES manual up                    up
 Ethernet0/1            unassigned      YES unset  up                    up
 Ethernet0/2            unassigned      YES unset  up                    up
 Ethernet0/3            unassigned      YES unset  up                    up
-Port-channel1          unassigned      YES unset  up                    up
-Vlan10                 192.168.10.100  YES manual up                    up
-Server1#ping 192.168.10.200
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 192.168.10.200, timeout is 2 seconds:
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 9/18/53 ms
-Server1#
-
-Server3#sh ip int br
-Interface              IP-Address      OK? Method Status                Protocol
-Ethernet0/0            192.168.10.200  YES manual up                    up
-Ethernet0/1            unassigned      YES unset  up                    up
-Ethernet0/2            unassigned      YES unset  up                    up
-Ethernet0/3            unassigned      YES unset  up                    up
-Server3#
-Server3#ping 192.168.10.100
-Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 192.168.10.100, timeout is 2 seconds:
-!!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 6/16/47 ms
+Loopback0              10.0.0.10       YES manual up                    up
+Loopback1              8.8.8.8         YES manual up                    up
+Firewall#
 
 ```
 
-Проверка доступности хостов <b>Server2 < - > Server4</b>:
+Проверка доступности хостов <b>Server1  - > Server3 и Internet</b>:
 ```
-Server2#sh ip int br
-Interface              IP-Address      OK? Method Status                Protocol
-Ethernet0/0            unassigned      YES unset  up                    up
-Ethernet0/1            unassigned      YES unset  up                    up
-Ethernet0/2            unassigned      YES unset  up                    up
-Ethernet0/3            unassigned      YES unset  up                    up
-Port-channel1          unassigned      YES unset  up                    up
-Vlan20                 192.168.20.10   YES manual up                    up
-Server2#
-Server2#ping 192.168.20.20
+Server1#sh ip ro
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override, p - overrides from PfR
+
+Gateway of last resort is 192.168.10.1 to network 0.0.0.0
+
+S*    0.0.0.0/0 [1/0] via 192.168.10.1
+      192.168.10.0/24 is variably subnetted, 2 subnets, 2 masks
+C        192.168.10.0/24 is directly connected, Ethernet0/0
+L        192.168.10.100/32 is directly connected, Ethernet0/0
+Server1#ping 8.8.8.8
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 9/17/41 ms
+Server1#ping 192.168.20.20
 Type escape sequence to abort.
 Sending 5, 100-byte ICMP Echos to 192.168.20.20, timeout is 2 seconds:
 !!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 7/23/58 ms
+Success rate is 100 percent (5/5), round-trip min/avg/max = 21/48/92 ms
+Server1#
 
-Server4#sh ip int br
-Interface              IP-Address      OK? Method Status                Protocol
-Ethernet0/0            192.168.20.20   YES manual up                    up
-Ethernet0/1            unassigned      YES unset  up                    up
-Ethernet0/2            unassigned      YES unset  up                    up
-Ethernet0/3            unassigned      YES unset  up                    up
-Server4#ping 192.168.20.10
+```
+
+Проверка доступности хостов <b>Server2  - > Server3 и Internet</b>:
+```
+Server2#sh ip ro
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       + - replicated route, % - next hop override
+
+Gateway of last resort is 192.168.20.1 to network 0.0.0.0
+
+S*    0.0.0.0/0 [1/0] via 192.168.20.1
+      192.168.20.0/24 is variably subnetted, 2 subnets, 2 masks
+C        192.168.20.0/24 is directly connected, Ethernet0/0
+L        192.168.20.10/32 is directly connected, Ethernet0/0
+Server2#
+Server2#ping 8.8.8.8
 Type escape sequence to abort.
-Sending 5, 100-byte ICMP Echos to 192.168.20.10, timeout is 2 seconds:
+Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:
 !!!!!
-Success rate is 100 percent (5/5), round-trip min/avg/max = 10/14/27 ms
-Server4#
+Success rate is 100 percent (5/5), round-trip min/avg/max = 13/29/61 ms
+Server2#ping 192.168.10.100
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.10.100, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 16/27/39 ms
+Server2#
 
 ```
 
